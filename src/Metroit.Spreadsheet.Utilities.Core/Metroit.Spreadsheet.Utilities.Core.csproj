@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0-windows;net8.0-windows;net9.0-windows</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    
+    <Authors>Takeru Yamaguchi</Authors>
+    <Description>Core utilities for working with spreadsheets.</Description>
+    <Copyright>Copyright ©  2025 Takeru Yamaguchi</Copyright>
+    <VersionPrefix>1.0.0.0</VersionPrefix>
+    <AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
+    <FileVersion>$(VersionPrefix)</FileVersion>
+
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <PackageProjectUrl>https://github.com/takiru/Metroit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/takiru/Metroit</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>New Released.</PackageReleaseNotes>
+    <PackageTags>Spreadsheet;Utilities;</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-windows'">
+    <PackageReference Include="System.Drawing.Common" Version="8.0.13" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' != 'net6.0-windows'">
+    <PackageReference Include="System.Drawing.Common" Version="9.0.2" />
+  </ItemGroup>
+</Project>
