@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.Remoting;
 using Xunit;
 
 namespace Metroit.Spreadsheet.Utilities.Core.Tests
 {
-    [Trait("TestCategory", "R1C1形式の値からA1形式の文字列に変換する")]
+    [Trait("Category", "R1C1形式の値からA1形式の文字列に変換する")]
     public class MetSsConvertTest
     {
         [Fact(DisplayName = "実行可能なパラメーターかどうか")]
-        [Trait("TestCategory", "R1C1形式の値からA1形式の文字列に変換する")]
+        [Trait("Category", "R1C1形式の値からA1形式の文字列に変換する")]
         public void TestCase001()
         {
             Assert

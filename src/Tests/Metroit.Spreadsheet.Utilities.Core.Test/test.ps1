@@ -1,5 +1,5 @@
 Write-Output "1) Creating test result with coverage"
-$TestOutput = dotnet test --collect:"XPlat Code Coverage"
+$TestOutput = dotnet test --collect:"XPlat Code Coverage" --logger "trx;logfilename=testResults2.trx"
 
 # Get file path
 $TestReports = $TestOutput | Select-String coverage.cobertura.xml | % { $_.ToString().Trim() }
