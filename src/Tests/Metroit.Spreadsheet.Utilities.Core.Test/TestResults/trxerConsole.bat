@@ -1,1 +1,0 @@
-TrxerConsole.exe testResults2.trx
