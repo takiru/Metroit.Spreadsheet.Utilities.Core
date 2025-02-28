@@ -23,6 +23,14 @@ Set-Variable -Name TestResultReportDirectory -Value "$ReportRootDirectory" -Opti
 
 
 <##
+ # レポート生成の初期化を行う。
+ #>
+ function Initialize()
+ {
+     Remove-Item -Path "$ReportRootDirectory" -Recurse -Force
+ }
+
+<##
  # ソリューションの単体テストを実施し、カバレッジ情報とtrxファイルを生成し、カバレッジXMLファイルパスを求める。
  # @return カバレッジXMLファイルパス。
  #>
@@ -97,20 +105,24 @@ function Cleanup()
 }
 
 
+# 初期化
+Write-Host "1) Initialize"
+Initialize
+
 # テストビルド
-Write-Host "1) Creating test result with coverage"
+Write-Host "2) Creating test result with coverage"
 [string]$coverageXmlFilePath = ExecuteTest
 
 # カバレッジレポート生成
-Write-Host "2) Creating coverage report"
+Write-Host "3) Creating coverage report"
 [string]$coverageReportIndexPath = CreateCoverage $coverageXmlFilePath $CoverageReportDirectory
 
 # 単体テストレポート生成
-Write-Host "3) Creating test report"
+Write-Host "4) Creating test report"
 [string]$testReportFilePath = CreateTestReport $TestResultReportDirectory
 
 # クリーンアップ
-Write-Host "4) Cleanup"
+Write-Host "5) Cleanup"
 Cleanup
 
 Write-Host "`r`nReport Path:"
