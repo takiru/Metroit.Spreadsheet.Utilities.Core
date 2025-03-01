@@ -1,4 +1,5 @@
 using namespace System.Diagnostics
+using namespace System.IO
 
 # テスト設定ファイルパス
 Set-Variable -Name RunSettingsFilePath -Value "test.runsettings" -Option Constant
@@ -23,18 +24,29 @@ Set-Variable -Name TestResultReportDirectory -Value "$ReportRootDirectory" -Opti
 
 
 <##
- # レポート生成の初期化を行う。
+ # 既存レポートを削除する。
  #>
- function Initialize()
+ function RemoveReports()
  {
-     Remove-Item -Path "$ReportRootDirectory" -Recurse -Force
+    if ([Directory]::Exists($ReportRootDirectory))
+    {
+        Remove-Item -Path "$ReportRootDirectory" -Recurse -Force
+    }
+ }
+
+ <##
+  # ソリューションのクリーンを行う。
+  #>
+ function ExecuteCleanSolution()
+ {
+    dotnet clean --configuration Debug
  }
 
 <##
  # ソリューションの単体テストを実施し、カバレッジ情報とtrxファイルを生成し、カバレッジXMLファイルパスを求める。
  # @return カバレッジXMLファイルパス。
  #>
-function ExecuteTest()
+function ExecuteTestSolution()
 {
     [string[]]$TestOutput = dotnet test --settings $RunSettingsFilePath
     [string]$cavarageXmlFile = $TestOutput | Select-String coverage.cobertura.xml | % { $_.ToString().Trim() }
@@ -105,24 +117,28 @@ function Cleanup()
 }
 
 
-# 初期化
-Write-Host "1) Initialize"
-Initialize
+# 既存レポートの削除
+Write-Host "1) Remove existing reports"
+RemoveReports
 
-# テストビルド
-Write-Host "2) Creating test result with coverage"
-[string]$coverageXmlFilePath = ExecuteTest
+# ソリューションのクリーン
+Write-Host "2) Solution clean"
+ExecuteCleanSolution
+
+# ソリューションのテストビルド
+Write-Host "3) Creating test result with coverage"
+[string]$coverageXmlFilePath = ExecuteTestSolution
 
 # カバレッジレポート生成
-Write-Host "3) Creating coverage report"
+Write-Host "4) Creating coverage report"
 [string]$coverageReportIndexPath = CreateCoverage $coverageXmlFilePath $CoverageReportDirectory
 
 # 単体テストレポート生成
-Write-Host "4) Creating test report"
+Write-Host "5) Creating test report"
 [string]$testReportFilePath = CreateTestReport $TestResultReportDirectory
 
 # クリーンアップ
-Write-Host "5) Cleanup"
+Write-Host "6) Cleanup"
 Cleanup
 
 Write-Host "`r`nReport Path:"

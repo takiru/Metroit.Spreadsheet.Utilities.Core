@@ -1,68 +1,90 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Remoting;
 using Xunit;
 
-namespace Metroit.Spreadsheet.Utilities.Core.Tests
+namespace Metroit.Spreadsheet.Utilities.Core.Test
 {
-    [Trait("Category", "R1C1形式の値からA1形式の文字列に変換する")]
+    [Trait("TestCategory", "MetSsConvertTest")]
     public class MetSsConvertTest
     {
-        [Fact(DisplayName = "実行可能なパラメーターかどうか")]
-        [Trait("Category", "R1C1形式の値からA1形式の文字列に変換する")]
-        public void TestCase001()
+        [Theory(DisplayName = "RcToA1()が実行可能かどうか")]
+        [InlineData("row", -1, 0)]
+        [InlineData("column", 0, -1)]
+        public void TestRcToA1Executable(string expected, int row, int column)
         {
             Assert
-                .Throws<ArgumentOutOfRangeException>(() => MetSsConvert.RcToA1(-1, 0))
+                .Throws<ArgumentOutOfRangeException>(() => MetSsConvert.RcToA1(row, column))
                 .Message
-                .Is("指定された引数は、有効な値の範囲内にありません。\r\nパラメーター名:row");
+                .Is($"指定された引数は、有効な値の範囲内にありません。\r\nパラメーター名:{expected}");
+        }
 
+        [Theory(DisplayName = "RcToA1()の実行")]
+        [InlineData("A1", 0, 0)]
+        [InlineData("Z1048576", 1048575, 25)]
+        [InlineData("BA1048576", 1048575, 52)]
+        [InlineData("BZ1048576", 1048575, 77)]
+        [InlineData("XFD1048576", 1048575, 16383)]
+        [InlineData("FXSHRXX1048576", 1048575, int.MaxValue)]
+        public void TestRcToA1(string expected, int row, int column)
+        {
+            MetSsConvert.RcToA1(row, column).Is(expected);
+        }
+
+        [Fact(DisplayName = "ToColumnA1()が実行可能かどうか")]
+        public void TestToColumnA1Executable()
+        {
             Assert
-                .Throws<ArgumentOutOfRangeException>(() => MetSsConvert.RcToA1(0, -1))
+                .Throws<ArgumentOutOfRangeException>(() => MetSsConvert.ToColumnA1(-1))
                 .Message
-                .Is("指定された引数は、有効な値の範囲内にありません。\r\nパラメーター名:column");
+                .Is("指定された引数は、有効な値の範囲内にありません。\r\nパラメーター名:index");
         }
 
-        [Fact(DisplayName = "A - Z の変換を行う")]
-        public void TestCase002()
+        [Theory(DisplayName = "ToColumnA1()の実行")]
+        [InlineData("A", 0)]
+        [InlineData("B", 1)]
+        [InlineData("Z", 25)]
+        [InlineData("AA", 26)]
+        [InlineData("AB", 27)]
+        [InlineData("AZ", 51)]
+        [InlineData("BA", 52)]
+        [InlineData("BZ", 77)]
+        [InlineData("CA", 78)]
+        [InlineData("XFD", 16383)]
+        [InlineData("FXSHRXX", int.MaxValue)]
+        public void TestToColumnA1(string expect, int index)
         {
-            string a1;
-
-            a1 = MetSsConvert.RcToA1(0, 0);
-            a1.Is("A1");
-
-            a1 = MetSsConvert.RcToA1(1048575, 25);
-            a1.Is("Z1048576");
+            MetSsConvert.ToColumnA1(index).Is(expect);
         }
 
-        [Fact(DisplayName = "BA - BZ の変換を行う")]
-        public void TestCase003()
+        [Theory(DisplayName = "ToColumnIndex()が実行可能かどうか")]
+        [InlineData(typeof(ArgumentNullException), "値を Null にすることはできません。\r\nパラメーター名:value", null)]
+        [InlineData(typeof(ArgumentException), "value is empty.", "")]
+        [InlineData(typeof(FormatException), "Argument format is only alphabet", "@A")]
+        [InlineData(typeof(ArgumentOutOfRangeException), "Argument range max \"FXSHRXX\"\r\nパラメーター名:value", "FXSHRXY")]
+        [InlineData(typeof(ArgumentOutOfRangeException), "Argument range max \"FXSHRXX\"\r\nパラメーター名:value", "AAAAAAAA")]
+        public void TestToColumnIndexExecutable(Type exceptionType, string expected, string value)
         {
-            string a1;
-
-            a1 = MetSsConvert.RcToA1(1048575, 52);
-            a1.Is("BA1048576");
-
-            a1 = MetSsConvert.RcToA1(1048575, 77);
-            a1.Is("BZ1048576");
+            Assert.Throws(exceptionType, 
+                () => MetSsConvert.ToColumnIndex(value))
+                .Message
+                .Is(expected);
         }
 
-        [Fact(DisplayName = "xlsx の最大セル XFD1048576の変換を行う")]
-        public void TestCase004()
+        [Theory(DisplayName = "ToColumnIndex()の実行")]
+        [InlineData(0, "A")]
+        [InlineData(25, "Z")]
+        [InlineData(26, "AA")]
+        [InlineData(27, "AB")]
+        [InlineData(51, "AZ")]
+        [InlineData(52, "BA")]
+        [InlineData(77, "BZ")]
+        [InlineData(78, "CA")]
+        [InlineData(702, "AAA")]
+        [InlineData(4341, "FJZ")]
+        [InlineData(16383, "XFD")]
+        [InlineData(int.MaxValue, "FXSHRXX")]
+        public void TestToColumnIndex(int expected, string value)
         {
-            string a1;
-
-            a1 = MetSsConvert.RcToA1(1048575, 16383);
-            a1.Is("XFD1048576");
-        }
-
-        [Fact(DisplayName = "機能が許容する最大セル XFD1048576の変換を行う")]
-        public void TestCase005()
-        {
-            string a1;
-
-            a1 = MetSsConvert.RcToA1(1048575, int.MaxValue);
-            a1.Is("FXSHRXX1048576");
+            MetSsConvert.ToColumnIndex(value).Is(expected);
         }
     }
 }

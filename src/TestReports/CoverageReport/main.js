@@ -244,7 +244,7 @@ var assemblies = [
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMap", "rp": "Metroit.Spreadsheet.Utilities.Core_CellMap.html", "cl": 0, "ucl": 162, "cal": 162, "tl": 331, "cb": 0, "tb": 52, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMergeAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellMergeAttribute.html", "cl": 0, "ucl": 12, "cal": 12, "tl": 48, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellOutputMapAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellOutputMapAttribute.html", "cl": 0, "ucl": 4, "cal": 4, "tl": 31, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Metroit.Spreadsheet.Utilities.Core.MetSsConvert", "rp": "Metroit.Spreadsheet.Utilities.Core_MetSsConvert.html", "cl": 50, "ucl": 0, "cal": 50, "tl": 137, "cb": 22, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Metroit.Spreadsheet.Utilities.Core.MetSsConvert", "rp": "Metroit.Spreadsheet.Utilities.Core_MetSsConvert.html", "cl": 53, "ucl": 0, "cal": 53, "tl": 141, "cb": 24, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
 ];
 

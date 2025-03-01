@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metroit.Spreadsheet.Utiliti
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A09E4748-EF4F-4A28-8A27-2859929EB7B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metroit.Spreadsheet.Utilities.Core.Tests", "Tests\Metroit.Spreadsheet.Utilities.Core.Test\Metroit.Spreadsheet.Utilities.Core.Tests.csproj", "{DDE15552-B4D0-E73B-E53F-849929A10AD5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metroit.Spreadsheet.Utilities.Core.Test", "Tests\Metroit.Spreadsheet.Utilities.Core.Test\Metroit.Spreadsheet.Utilities.Core.Test.csproj", "{DDE15552-B4D0-E73B-E53F-849929A10AD5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

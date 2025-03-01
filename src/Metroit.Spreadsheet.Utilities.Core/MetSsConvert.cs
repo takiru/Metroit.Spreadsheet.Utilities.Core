@@ -80,9 +80,13 @@ namespace Metroit.Spreadsheet.Utilities.Core
             const string MaxValue = "FXSHRXX";
 
             // 値が未設定の場合は実行不可
-            if (string.IsNullOrWhiteSpace(value))
+            if (value == null)
             {
                 throw new ArgumentNullException(nameof(value));
+            }
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException("value is empty.");
             }
 
             // 英字以外が含まれる場合は実行不可
