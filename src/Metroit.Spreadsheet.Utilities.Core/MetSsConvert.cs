@@ -67,7 +67,8 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// </summary>
         /// <param name="value">A1形式の列文字列。</param>
         /// <returns>列インデックス。</returns>
-        /// <exception cref="ArgumentNullException">value が null または 空文字 の場合に発生します。</exception>
+        /// <exception cref="ArgumentNullException">value が null の場合に発生します。</exception>
+        /// <exception cref="ArgumentException">value が空の場合に発生します。</exception>
         /// <exception cref="FormatException">value に英字以外が含まれる場合に発生します。</exception>
         /// <exception cref="ArgumentOutOfRangeException">value が <see cref="int.MaxValue"/> で表現可能な FXSHRXX を超過している場合に発生します。</exception>
         /// <remarks>

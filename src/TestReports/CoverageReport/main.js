@@ -221,7 +221,6 @@ var assemblies = [
   {
     "name": "Metroit.Spreadsheet.Utilities.Core",
     "classes": [
-      { "name": "Metroit.Spreadsheet.Utilities.Core.CellUtils", "rp": "Metroit.Spreadsheet.Utilities.Core_CellUtils.html", "cl": 0, "ucl": 29, "cal": 29, "tl": 81, "cb": 0, "tb": 14, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellAlignmentItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellAlignmentItem.html", "cl": 0, "ucl": 7, "cal": 7, "tl": 32, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellBackgroundItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellBackgroundItem.html", "cl": 0, "ucl": 5, "cal": 5, "tl": 23, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellBorderItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellBorderItem.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 46, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -244,7 +243,7 @@ var assemblies = [
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMap", "rp": "Metroit.Spreadsheet.Utilities.Core_CellMap.html", "cl": 0, "ucl": 162, "cal": 162, "tl": 331, "cb": 0, "tb": 52, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMergeAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellMergeAttribute.html", "cl": 0, "ucl": 12, "cal": 12, "tl": 48, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellOutputMapAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellOutputMapAttribute.html", "cl": 0, "ucl": 4, "cal": 4, "tl": 31, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Metroit.Spreadsheet.Utilities.Core.MetSsConvert", "rp": "Metroit.Spreadsheet.Utilities.Core_MetSsConvert.html", "cl": 53, "ucl": 0, "cal": 53, "tl": 141, "cb": 24, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Metroit.Spreadsheet.Utilities.Core.MetSsConvert", "rp": "Metroit.Spreadsheet.Utilities.Core_MetSsConvert.html", "cl": 53, "ucl": 0, "cal": 53, "tl": 142, "cb": 24, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
 ];
 
@@ -269,12 +268,6 @@ var riskHotspots = [
     "metrics": [
       { "value": 420, "exceeded": true },
       { "value": 20, "exceeded": true },
-    ]},
-  {
-    "assembly": "Metroit.Spreadsheet.Utilities.Core", "class": "Metroit.Spreadsheet.Utilities.Core.CellUtils", "reportPath": "Metroit.Spreadsheet.Utilities.Core_CellUtils.html", "methodName": "ToColumnIndex(System.String)", "methodShortName": "ToColumnIndex(...)", "fileIndex": 0, "line": 42,
-    "metrics": [
-      { "value": 110, "exceeded": true },
-      { "value": 10, "exceeded": false },
     ]},
 ];
 
