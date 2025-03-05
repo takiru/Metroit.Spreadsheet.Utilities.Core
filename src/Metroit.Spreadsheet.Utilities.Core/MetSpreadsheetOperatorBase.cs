@@ -262,7 +262,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
             if (item.Value != null)
             {
-                Parse(item.Value.GetType().GetElementType(), attribute, item, item.Value);
+                Parse(item.Value, attribute, item, item.Value.GetType().GetElementType());
                 if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
                 {
                     targetItem.Child.Add(item);
@@ -290,7 +290,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
             if (item.Value != null)
             {
-                Parse(item.Value.GetType().GenericTypeArguments[0], attribute, item, item.Value);
+                Parse(item.Value, attribute, item, item.Value.GetType().GenericTypeArguments[0]);
                 if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
                 {
                     targetItem.Child.Add(item);
@@ -304,20 +304,20 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// </summary>
         /// <param name="value">対象オブジェクト。</param>
         /// <param name="attribute">処理対象属性。</param>
-        private void Parse(object value, Type attribute, TargetItem targetItem, object childValue = null)
+        private void Parse(object value, Type attribute, TargetItem targetItem, Type childType = null)
         {
             Type t;
-            if (value is Type)
-            {
-                t = (Type)value;
-            }
-            else
+            if (childType == null)
             {
                 t = value.GetType();
             }
+            else
+            {
+                t = childType;
+            }
 
             var pis = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
-            if (childValue == null)
+            if (childType == null)
             {
                 targetItem.Value = value;
             }
@@ -340,7 +340,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
                     {
                         var elementSafeType = Nullable.GetUnderlyingType(safeType.GetElementType()) ?? safeType.GetElementType();
                         TryAddArrayProperty(pi, elementSafeType, attribute,
-                            (childValue == null ? pi.GetValue(value) : pi.GetValue(childValue)),
+                            pi.GetValue(value),
                             targetItem);
                         continue;
                     }
@@ -354,7 +354,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
                     //// IListなら受け入れる
                     var genericSafeType = Nullable.GetUnderlyingType(safeType.GenericTypeArguments[0]) ?? safeType.GenericTypeArguments[0];
                     TryAddIListProperty(pi, genericSafeType, attribute,
-                        (childValue == null ? pi.GetValue(value) : pi.GetValue(childValue)),
+                        pi.GetValue(value),
                         targetItem);
                     continue;
                 }
@@ -362,18 +362,10 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
                 // 自前クラスの場合
                 var item2 = new TargetItem();
-                if (value is Type)
-                {
-                    item2.Value = pi.GetValue(childValue);
-                }
-                else
-                {
-                    item2.Value = pi.GetValue(value);
-                }
-
+                item2.Value = pi.GetValue(value);
                 if (item2.Value != null)
                 {
-                    Parse(item2.Value.GetType(), attribute, item2, item2.Value);
+                    Parse(item2.Value, attribute, item2, item2.Value.GetType());
                     if (item2.TargetProperties.Count > 0 || item2.Child.Count > 0)
                     {
                         targetItem.Child.Add(item2);
