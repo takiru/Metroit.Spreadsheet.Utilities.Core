@@ -226,7 +226,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <param name="pi">検証を行うプロパティ。</param>
         /// <param name="elementSafeType">Nullable を除いた配列要素の安全な型。</param>
         /// <param name="attribute">処理対象とする、プロパティに保有が必要な属性。</param>
-        /// <param name="value"></param>
+        /// <param name="value">追加を行うオブジェクト。</param>
         /// <param name="targetItem">対象プロパティとして追加する対象アイテム。</param>
         private void AddArrayProperty(PropertyInfo pi, Type elementSafeType, Type attribute, object value, TargetItem targetItem)
         {
@@ -235,7 +235,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
                 return;
             }
 
-            // 配列要素がプリミティブ型
+            // 配列要素がプリミティブ
             if (IsPrimitiveOrNearPrimitive(elementSafeType))
             {
                 if (!HasTargetAttribute(pi, attribute))
@@ -247,7 +247,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
                 return;
             }
 
-            // 配列要素がクラス
+            // 配列要素がクラスの場合は再帰的に解析する
             var item = new TargetItem(value);
             Parse(item, attribute, item.Value.GetType().GetElementType());
             if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
@@ -257,16 +257,21 @@ namespace Metroit.Spreadsheet.Utilities.Core
         }
 
         /// <summary>
-        /// 
+        /// IList を持つプロパティを対象プロパティとして追加する。
         /// </summary>
-        /// <param name="pi"></param>
-        /// <param name="genericSafeType"></param>
-        /// <param name="attribute"></param>
-        /// <param name="value"></param>
-        /// <param name="targetItem"></param>
+        /// <param name="pi">検証を行うプロパティ。</param>
+        /// <param name="genericSafeType">Nullable を除いたジェネリックの安全な型。</param>
+        /// <param name="attribute">処理対象とする、プロパティに保有が必要な属性。</param>
+        /// <param name="value">追加を行うオブジェクト。</param>
+        /// <param name="targetItem">対象プロパティとして追加する対象アイテム。</param>
         private void AddIListProperty(PropertyInfo pi, Type genericSafeType, Type attribute, object value, TargetItem targetItem)
         {
-            // List<string> などのプリミティブの場合
+            if (value == null)
+            {
+                return;
+            }
+
+            // List<string> などのジェネリックがプリミティブ
             if (IsPrimitiveOrNearPrimitive(genericSafeType))
             {
                 if (!HasTargetAttribute(pi, attribute))
@@ -277,16 +282,35 @@ namespace Metroit.Spreadsheet.Utilities.Core
                 return;
             }
 
-            //// 反復処理のあるジェネリックの場合は再帰的に解析する
+            // ジェネリックがクラスの場合は再帰的に解析する
             var item = new TargetItem(value);
-
-            if (item.Value != null)
+            Parse(item, attribute, item.Value.GetType().GenericTypeArguments[0]);
+            if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
             {
-                Parse(item, attribute, item.Value.GetType().GenericTypeArguments[0]);
-                if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
-                {
-                    targetItem.Child.Add(item);
-                }
+                targetItem.Child.Add(item);
+            }
+        }
+
+        /// <summary>
+        /// 単純クラスを対象プロパティとして追加する。
+        /// </summary>
+        /// <param name="pi">検証を行うプロパティ。</param>
+        /// <param name="attribute">処理対象とする、プロパティに保有が必要な属性。</param>
+        /// <param name="value">追加を行うオブジェクト。</param>
+        /// <param name="targetItem">対象プロパティとして追加する対象アイテム。</param>
+        private void AddSimpleClassProperty(PropertyInfo pi, Type attribute, object value, TargetItem targetItem)
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            // クラスを再帰的に解析する
+            var item = new TargetItem(value);
+            Parse(item, attribute);
+            if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
+            {
+                targetItem.Child.Add(item);
             }
         }
 
@@ -310,39 +334,30 @@ namespace Metroit.Spreadsheet.Utilities.Core
                     continue;
                 }
 
-                // 反復処理のある型
-                if (safeType.GetInterfaces().Where(x => x == typeof(IEnumerable)).FirstOrDefault() != null)
+                // 反復処理のない単純クラス
+                if (!safeType.GetInterfaces().Where(x => x == typeof(IEnumerable)).Any())
                 {
-                    // 配列なら受け入れる
-                    if (safeType.IsArray)
-                    {
-                        var elementSafeType = Nullable.GetUnderlyingType(safeType.GetElementType()) ?? safeType.GetElementType();
-                        AddArrayProperty(pi, elementSafeType, attribute, pi.GetValue(targetItem.Value), targetItem);
-                        continue;
-                    }
-
-                    // IList 以外の IEnumerable は受け付けない
-                    if (!safeType.GetInterfaces().Where(x => x == typeof(IList)).Any())
-                    {
-                        continue;
-                    }
-
-                    //// IListなら受け入れる
-                    var genericSafeType = Nullable.GetUnderlyingType(safeType.GenericTypeArguments[0]) ?? safeType.GenericTypeArguments[0];
-                    AddIListProperty(pi, genericSafeType, attribute, pi.GetValue(targetItem.Value), targetItem);
+                    AddSimpleClassProperty(pi, attribute, pi.GetValue(targetItem.Value), targetItem);
                     continue;
                 }
 
-                // 自前クラスの場合
-                var item2 = new TargetItem(pi.GetValue(targetItem.Value));
-                if (item2.Value != null)
+                // 配列なら受け入れる
+                if (safeType.IsArray)
                 {
-                    Parse(item2, attribute);
-                    if (item2.TargetProperties.Count > 0 || item2.Child.Count > 0)
-                    {
-                        targetItem.Child.Add(item2);
-                    }
+                    var elementSafeType = Nullable.GetUnderlyingType(safeType.GetElementType()) ?? safeType.GetElementType();
+                    AddArrayProperty(pi, elementSafeType, attribute, pi.GetValue(targetItem.Value), targetItem);
+                    continue;
                 }
+
+                // IList<> 以外の IEnumerable は受け付けない
+                if (!safeType.GetInterfaces().Where(x => x == typeof(IList)).Any())
+                {
+                    continue;
+                }
+
+                // IList<>
+                var genericSafeType = Nullable.GetUnderlyingType(safeType.GenericTypeArguments[0]) ?? safeType.GenericTypeArguments[0];
+                AddIListProperty(pi, genericSafeType, attribute, pi.GetValue(targetItem.Value), targetItem);
             }
         }
     }
