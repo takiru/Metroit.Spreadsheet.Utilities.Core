@@ -66,7 +66,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
             //Parse(value, typeof(CellOutputMapAttribute));
             _parsedProperties = new TargetItem();
             _parsedProperties.Value = value;
-            Parse(value, typeof(CellOutputMapAttribute), _parsedProperties);
+            Parse(typeof(CellOutputMapAttribute), _parsedProperties);
 
             TestResult(_parsedProperties);
             Console.WriteLine("Finish");
@@ -154,8 +154,8 @@ namespace Metroit.Spreadsheet.Utilities.Core
             OnPreWriting();
 
             //_parsedProperties = new List<PropertyInfo>();
-            _parsedProperties = new TargetItem();
-            Parse(value, typeof(CellOutputMapAttribute), _parsedProperties);
+            //_parsedProperties = new TargetItem();
+            //Parse(value, typeof(CellOutputMapAttribute), _parsedProperties);
         }
 
 
@@ -275,7 +275,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
             // 配列要素がクラス
             var item = new TargetItem();
             item.Value = value;
-            Parse(item.Value, attribute, item, item.Value.GetType().GetElementType());
+            Parse(attribute, item, item.Value.GetType().GetElementType());
             if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
             {
                 targetItem.Child.Add(item);
@@ -309,7 +309,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
             if (item.Value != null)
             {
-                Parse(item.Value, attribute, item, item.Value.GetType().GenericTypeArguments[0]);
+                Parse(attribute, item, item.Value.GetType().GenericTypeArguments[0]);
                 if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
                 {
                     targetItem.Child.Add(item);
@@ -322,9 +322,9 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// </summary>
         /// <param name="value">対象オブジェクト。</param>
         /// <param name="attribute">処理対象属性。</param>
-        private void Parse(object value, Type attribute, TargetItem targetItem, Type childType = null)
+        private void Parse(Type attribute, TargetItem targetItem, Type childType = null)
         {
-            Type t = childType == null ? value.GetType() : childType;
+            Type t = childType == null ? targetItem.Value.GetType() : childType;
             var pis = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
 
             foreach (var pi in pis)
@@ -344,7 +344,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
                     if (safeType.IsArray)
                     {
                         var elementSafeType = Nullable.GetUnderlyingType(safeType.GetElementType()) ?? safeType.GetElementType();
-                        AddArrayProperty(pi, elementSafeType, attribute, pi.GetValue(value), targetItem);
+                        AddArrayProperty(pi, elementSafeType, attribute, pi.GetValue(targetItem.Value), targetItem);
                         continue;
                     }
 
@@ -356,17 +356,17 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
                     //// IListなら受け入れる
                     var genericSafeType = Nullable.GetUnderlyingType(safeType.GenericTypeArguments[0]) ?? safeType.GenericTypeArguments[0];
-                    AddIListProperty(pi, genericSafeType, attribute, pi.GetValue(value), targetItem);
+                    AddIListProperty(pi, genericSafeType, attribute, pi.GetValue(targetItem.Value), targetItem);
                     continue;
                 }
 
 
                 // 自前クラスの場合
                 var item2 = new TargetItem();
-                item2.Value = pi.GetValue(value);
+                item2.Value = pi.GetValue(targetItem.Value);
                 if (item2.Value != null)
                 {
-                    Parse(item2.Value, attribute, item2, item2.Value.GetType());
+                    Parse(attribute, item2, item2.Value.GetType());
                     if (item2.TargetProperties.Count > 0 || item2.Child.Count > 0)
                     {
                         targetItem.Child.Add(item2);
