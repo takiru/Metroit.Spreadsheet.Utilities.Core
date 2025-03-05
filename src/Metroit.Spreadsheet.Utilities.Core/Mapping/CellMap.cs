@@ -100,16 +100,16 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
                 }
 
                 var itemInfo = new CellInputItemInfo(pi,
-                    new CellInputMapItem(mapAttr.Row, mapAttr.Column, mapAttr.Formula)
+                    new CellInputMapItem(pi.Name, mapAttr.Row, mapAttr.Column, mapAttr.Formula)
                     );
 
                 if (mapDirection == MapDirection.Row)
                 {
-                    itemInfo.Cell.Row = mapIndex;
+                    itemInfo.Cell.ChangeRow(mapIndex);
                 }
                 if (mapDirection == MapDirection.Column)
                 {
-                    itemInfo.Cell.Column = mapIndex;
+                    itemInfo.Cell.ChangeColumn(mapIndex);
                 }
 
                 // 編集メソッドがある場合は呼出を行う
@@ -162,20 +162,6 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
 
         /// <summary>
         /// 出力セルマップを有するプロパティの値をExcelに書き込みます。
-        /// マップのカスタム編集は行われません。
-        /// </summary>
-        /// <param name="entity">出力オブジェクト。</param>
-        /// <param name="itemWrite">Excelオブジェクトを利用したデータ書き込みコード。</param>
-        /// <param name="properties">出力を行うプロパティ。</param>
-        /// <param name="param">実行パラメーター。</param>
-        public void Write(object entity, Action<CellOutputItemInfo, object, object> itemWrite,
-            string[] properties, object param = null)
-        {
-            WriteValues(entity, itemWrite, -1, MapDirection.None, param, properties);
-        }
-
-        /// <summary>
-        /// 出力セルマップを有するプロパティの値をExcelに書き込みます。
         /// </summary>
         /// <param name="entity">出力オブジェクト。</param>
         /// <param name="itemWrite">Excelオブジェクトを利用したデータ書き込みコード。</param>
@@ -188,18 +174,34 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
         }
 
         /// <summary>
-        /// 出力セルマップを有するプロパティの値をExcelに書き込みます。
+        /// 
         /// </summary>
-        /// <param name="entity">出力オブジェクト。</param>
-        /// <param name="itemWrite">Excelオブジェクトを利用したデータ書き込みコード。</param>
-        /// <param name="properties">出力を行うプロパティ。</param>
-        /// <param name="mapIndex">マップするインデックス。</param>
-        /// <param name="mapDirection">マップする方向が行か列か。</param>
-        /// <param name="param">実行パラメーター。</param>
-        public void Write(object entity, Action<CellOutputItemInfo, object, object> itemWrite, string[] properties,
-            int mapIndex, MapDirection mapDirection = MapDirection.Row, object param = null)
+        /// <param name="entity"></param>
+        /// <param name="mapItem"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        private CellOutputMapItem ConfigureOutputCell(object entity, CellOutputMapItem mapItem, object param)
         {
-            WriteValues(entity, itemWrite, mapIndex, mapDirection, param, properties);
+            // ユーザー制御に伴うセル位置の変更
+            var outputConfig = entity as IOutputCellConfiguration;
+            if (outputConfig != null)
+            {
+                outputConfig.ConfigureCell(mapItem, param);
+            }
+
+            return mapItem;
+        }
+
+        private bool IgnoreOutputCell(object entity, IReadOnlyCellMapItem mapItem, object param)
+        {
+            // ユーザー制御に伴う書き出しの無視
+            var ignoreConfig = entity as IOutputIgnoreConfiguration;
+            if (ignoreConfig.IgnoreOutput(mapItem, param))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -211,9 +213,8 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
         /// <param name="mapIndex">マップするインデックス。</param>
         /// <param name="mapDirection">マップする方向が行か列か。</param>
         /// <param name="param">実行パラメーター。</param>
-        /// <param name="properties">出力を行うプロパティ。</param>
         private void WriteValues(object entity, Action<CellOutputItemInfo, object, object> itemWrite,
-            int mapIndex, MapDirection mapDirection, object param, string[] properties = null)
+            int mapIndex, MapDirection mapDirection, object param)
         {
             // オブジェクトからプロパティを取得
             var t = entity.GetType();
@@ -228,21 +229,40 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
                     continue;
                 }
 
-                // 指定されたプロパティ以外の場合は実施しない
-                if (properties != null && !properties.Contains(pi.Name))
+                // 属性から得られたセル情報
+                var mapItem = new CellOutputMapItem(pi.Name, mapAttr.Row, mapAttr.Column, mapAttr.Formula);
+
+                // ユーザー制御に伴うセル位置の変更
+                mapItem = ConfigureOutputCell(entity, mapItem, param);
+
+                // ユーザー制御に伴う書き出しの無視
+                if (IgnoreOutputCell(entity, mapItem, param))
                 {
                     continue;
                 }
-
-                var mapItem = new CellOutputMapItem(mapAttr.Row, mapAttr.Column, mapAttr.Formula);
 
                 // 結合
                 var mergeAttr = Attribute.GetCustomAttribute(pi, typeof(CellMergeAttribute)) as CellMergeAttribute;
                 CellMergeItem mergeItem = null;
                 if (mergeAttr != null)
                 {
-                    mergeItem = new CellMergeItem(mergeAttr.Row, mergeAttr.Column, mergeAttr.Position);
+                    var endRow = mergeAttr.Row;
+                    var endColumn = mergeAttr.Column;
+                    if (mergeAttr.Position == CellMergePosition.Relative)
+                    {
+                        endRow = mapItem.Row + mergeAttr.Row;
+                        endColumn = mapItem.Column + mergeAttr.Column;
+                    }
+
+                    mergeItem = new CellMergeItem(mergeAttr.Row, mergeAttr.Column, mergeAttr.Position, endRow, endColumn);
                 }
+
+
+
+
+
+
+
                 // 書式
                 var formatAttr = Attribute.GetCustomAttribute(pi, typeof(CellFormatAttribute)) as CellFormatAttribute;
                 CellFormatItem formatItem = null;
@@ -293,7 +313,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
                     }
                 }
 
-                var itemInfo = new CellOutputItemInfo(pi,
+                var itemInfo = new CellOutputItemInfo(pi.Name,
                     mapItem,
                     mergeItem,
                     formatItem,
@@ -306,25 +326,26 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
 
                 if (mapDirection == MapDirection.Row)
                 {
-                    itemInfo.Cell.Row = mapIndex;
+                    itemInfo.Cell.ChangeRow(mapIndex);
                 }
                 if (mapDirection == MapDirection.Column)
                 {
-                    itemInfo.Cell.Column = mapIndex;
+                    itemInfo.Cell.ChangeColumn(mapIndex);
                 }
 
                 // プロパティ指定でない時、マップのカスタム編集メソッドがある場合は呼出を行う
-                if (properties == null)
-                {
-                    var mi = t.GetMethod(OutputMapConfigureMethodName, BindingFlags.NonPublic | BindingFlags.Instance);
-                    if (mi != null)
-                    {
-                        mi.Invoke(entity, new object[] { itemInfo, param });
-                    }
-                }
+                //if (ignoreProperties == null)
+                //{
+                //    var mi = t.GetMethod(OutputMapConfigureMethodName, BindingFlags.NonPublic | BindingFlags.Instance);
+                //    if (mi != null)
+                //    {
+                //        mi.Invoke(entity, new object[] { itemInfo, param });
+                //    }
+                //}
+
 
                 var value = pi.GetValue(entity, null);
-                itemWrite(itemInfo, param, value);
+                itemWrite.Invoke(itemInfo, param, value);
             }
         }
     }

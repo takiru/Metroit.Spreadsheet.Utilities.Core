@@ -221,6 +221,7 @@ var assemblies = [
   {
     "name": "Metroit.Spreadsheet.Utilities.Core",
     "classes": [
+      { "name": "Metroit.Spreadsheet.Utilities.Core.Class1", "rp": "Metroit.Spreadsheet.Utilities.Core_Class1.html", "cl": 0, "ucl": 1, "cal": 1, "tl": 16, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellAlignmentItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellAlignmentItem.html", "cl": 0, "ucl": 7, "cal": 7, "tl": 32, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellBackgroundItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellBackgroundItem.html", "cl": 0, "ucl": 5, "cal": 5, "tl": 23, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellBorderItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellBorderItem.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 46, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -228,10 +229,10 @@ var assemblies = [
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellFontItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellFontItem.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 45, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellFormatItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellFormatItem.html", "cl": 0, "ucl": 5, "cal": 5, "tl": 22, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellInputItemInfo", "rp": "Metroit.Spreadsheet.Utilities.Core_CellInputItemInfo.html", "cl": 0, "ucl": 7, "cal": 7, "tl": 31, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellInputMapItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellInputMapItem.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 33, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellMergeItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellMergeItem.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 35, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellInputMapItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellInputMapItem.html", "cl": 0, "ucl": 27, "cal": 27, "tl": 84, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellMergeItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellMergeItem.html", "cl": 0, "ucl": 13, "cal": 13, "tl": 47, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellOutputItemInfo", "rp": "Metroit.Spreadsheet.Utilities.Core_CellOutputItemInfo.html", "cl": 0, "ucl": 23, "cal": 23, "tl": 83, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellOutputMapItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellOutputMapItem.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 33, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Metroit.Spreadsheet.Utilities.Core.MapItem.CellOutputMapItem", "rp": "Metroit.Spreadsheet.Utilities.Core_CellOutputMapItem.html", "cl": 0, "ucl": 27, "cal": 27, "tl": 84, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellAlignmentAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellAlignmentAttribute.html", "cl": 0, "ucl": 14, "cal": 14, "tl": 49, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellBackgroundAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellBackgroundAttribute.html", "cl": 0, "ucl": 12, "cal": 12, "tl": 41, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellBorderAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellBorderAttribute.html", "cl": 0, "ucl": 18, "cal": 18, "tl": 64, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -240,10 +241,10 @@ var assemblies = [
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellFormatAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellFormatAttribute.html", "cl": 0, "ucl": 5, "cal": 5, "tl": 25, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellInputMapAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellInputMapAttribute.html", "cl": 0, "ucl": 4, "cal": 4, "tl": 31, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellItemInfo", "rp": "Metroit.Spreadsheet.Utilities.Core_CellItemInfo.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 41, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMap", "rp": "Metroit.Spreadsheet.Utilities.Core_CellMap.html", "cl": 0, "ucl": 162, "cal": 162, "tl": 331, "cb": 0, "tb": 52, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMap", "rp": "Metroit.Spreadsheet.Utilities.Core_CellMap.html", "cl": 0, "ucl": 171, "cal": 171, "tl": 352, "cb": 0, "tb": 52, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMergeAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellMergeAttribute.html", "cl": 0, "ucl": 12, "cal": 12, "tl": 48, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellOutputMapAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellOutputMapAttribute.html", "cl": 0, "ucl": 4, "cal": 4, "tl": 31, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Metroit.Spreadsheet.Utilities.Core.MetSsConvert", "rp": "Metroit.Spreadsheet.Utilities.Core_MetSsConvert.html", "cl": 53, "ucl": 0, "cal": 53, "tl": 142, "cb": 24, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellOutputMapAttribute", "rp": "Metroit.Spreadsheet.Utilities.Core_CellOutputMapAttribute.html", "cl": 0, "ucl": 18, "cal": 18, "tl": 59, "cb": 0, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Metroit.Spreadsheet.Utilities.Core.MetSpreadsheetConvert", "rp": "Metroit.Spreadsheet.Utilities.Core_MetSpreadsheetConvert.html", "cl": 139, "ucl": 0, "cal": 139, "tl": 303, "cb": 61, "tb": 64, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
 ];
 
@@ -258,16 +259,22 @@ var riskHotspotMetrics = [
 
 var riskHotspots = [
   {
-    "assembly": "Metroit.Spreadsheet.Utilities.Core", "class": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMap", "reportPath": "Metroit.Spreadsheet.Utilities.Core_CellMap.html", "methodName": "WriteValues(System.Object,System.Action`3<Metroit.Spreadsheet.Utilities.Core.MapItem.CellOutputItemInfo,System.Object,System.Object>,System.Int32,Metroit.Spreadsheet.Utilities.Core.Mapping.MapDirection,System.Object,System.String[])", "methodShortName": "WriteValues(...)", "fileIndex": 0, "line": 217,
+    "assembly": "Metroit.Spreadsheet.Utilities.Core", "class": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMap", "reportPath": "Metroit.Spreadsheet.Utilities.Core_CellMap.html", "methodName": "WriteValues(System.Object,System.Action`3<Metroit.Spreadsheet.Utilities.Core.MapItem.CellOutputItemInfo,System.Object,System.Object>,System.Int32,Metroit.Spreadsheet.Utilities.Core.Mapping.MapDirection,System.Object)", "methodShortName": "WriteValues(...)", "fileIndex": 0, "line": 218,
     "metrics": [
-      { "value": 1056, "exceeded": true },
-      { "value": 32, "exceeded": true },
+      { "value": 812, "exceeded": true },
+      { "value": 28, "exceeded": true },
     ]},
   {
     "assembly": "Metroit.Spreadsheet.Utilities.Core", "class": "Metroit.Spreadsheet.Utilities.Core.Mapping.CellMap", "reportPath": "Metroit.Spreadsheet.Utilities.Core_CellMap.html", "methodName": "ReadValues(System.Object,System.Func`3<Metroit.Spreadsheet.Utilities.Core.MapItem.CellInputItemInfo,System.Object,System.Object>,System.Int32,Metroit.Spreadsheet.Utilities.Core.Mapping.MapDirection,System.Object)", "methodShortName": "ReadValues(...)", "fileIndex": 0, "line": 88,
     "metrics": [
       { "value": 420, "exceeded": true },
       { "value": 20, "exceeded": true },
+    ]},
+  {
+    "assembly": "Metroit.Spreadsheet.Utilities.Core", "class": "Metroit.Spreadsheet.Utilities.Core.MetSpreadsheetConvert", "reportPath": "Metroit.Spreadsheet.Utilities.Core_MetSpreadsheetConvert.html", "methodName": "ToRange(System.Int32,System.Int32,System.Int32,System.Int32)", "methodShortName": "ToRange(...)", "fileIndex": 0, "line": 165,
+    "metrics": [
+      { "value": 22, "exceeded": false },
+      { "value": 22, "exceeded": true },
     ]},
 ];
 
