@@ -324,16 +324,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <param name="attribute">処理対象属性。</param>
         private void Parse(object value, Type attribute, TargetItem targetItem, Type childType = null)
         {
-            Type t;
-            if (childType == null)
-            {
-                t = value.GetType();
-            }
-            else
-            {
-                t = childType;
-            }
-
+            Type t = childType == null ? value.GetType() : childType;
             var pis = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
 
             foreach (var pi in pis)
