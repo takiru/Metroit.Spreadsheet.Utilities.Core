@@ -354,6 +354,10 @@ namespace Metroit.Spreadsheet.Utilities.Core
                 {
                     continue;
                 }
+                if (safeType.GenericTypeArguments.Length < 1)
+                {
+                    continue;
+                }
 
                 // IList<>
                 var genericSafeType = Nullable.GetUnderlyingType(safeType.GenericTypeArguments[0]) ?? safeType.GenericTypeArguments[0];
