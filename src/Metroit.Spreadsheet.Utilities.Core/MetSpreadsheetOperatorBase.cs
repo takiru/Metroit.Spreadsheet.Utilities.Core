@@ -62,11 +62,8 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
             OnPreWriting();
 
-            //_parsedProperties = new List<PropertyInfo>();
-            //Parse(value, typeof(CellOutputMapAttribute));
-            _parsedProperties = new TargetItem();
-            _parsedProperties.Value = value;
-            Parse(typeof(CellOutputMapAttribute), _parsedProperties);
+            _parsedProperties = new TargetItem(value);
+            Parse(_parsedProperties, typeof(CellOutputMapAttribute));
 
             TestResult(_parsedProperties);
             Console.WriteLine("Finish");
@@ -159,7 +156,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
         }
 
 
-        private TargetItem _parsedProperties = new TargetItem();
+        private TargetItem _parsedProperties;
 
         /// <summary>
         /// 型がプリミティブ型もしくはプリミティブ型に近い型かどうかを取得する。
@@ -182,28 +179,6 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
             return false;
         }
-
-        ///// <summary>
-        ///// プリミティブ型もしくはプリミティブ型に近い型で、処理対象とするプロパティかどうかを取得する。
-        ///// </summary>
-        ///// <param name="pi">検証を行うプロパティ。</param>
-        ///// <param name="safeType">Nullable を除いた安全な型。</param>
-        ///// <param name="attribute">処理対象とする、プロパティが保有している属性。</param>
-        ///// <returns>プリミティブ型もしくはプリミティブ型に近い型で、処理対象とするプロパティの場合は true, それ以外は false。</returns>
-        //private bool IsEligiblePrimitiveProperty(PropertyInfo pi, Type safeType, Type attribute)
-        //{
-        //    if (!IsPrimitiveOrNearPrimitive(safeType))
-        //    {
-        //        return false;
-        //    }
-
-        //    if (Attribute.GetCustomAttribute(pi, attribute) == null)
-        //    {
-        //        return false;
-        //    }
-
-        //    return true;
-        //}
 
         /// <summary>
         /// プロパティに処理対象とする属性が含まれるかどうかを取得する。
@@ -273,9 +248,8 @@ namespace Metroit.Spreadsheet.Utilities.Core
             }
 
             // 配列要素がクラス
-            var item = new TargetItem();
-            item.Value = value;
-            Parse(attribute, item, item.Value.GetType().GetElementType());
+            var item = new TargetItem(value);
+            Parse(item, attribute, item.Value.GetType().GetElementType());
             if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
             {
                 targetItem.Child.Add(item);
@@ -304,12 +278,11 @@ namespace Metroit.Spreadsheet.Utilities.Core
             }
 
             //// 反復処理のあるジェネリックの場合は再帰的に解析する
-            var item = new TargetItem();
-            item.Value = value;
+            var item = new TargetItem(value);
 
             if (item.Value != null)
             {
-                Parse(attribute, item, item.Value.GetType().GenericTypeArguments[0]);
+                Parse(item, attribute, item.Value.GetType().GenericTypeArguments[0]);
                 if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
                 {
                     targetItem.Child.Add(item);
@@ -322,7 +295,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// </summary>
         /// <param name="value">対象オブジェクト。</param>
         /// <param name="attribute">処理対象属性。</param>
-        private void Parse(Type attribute, TargetItem targetItem, Type childType = null)
+        private void Parse(TargetItem targetItem, Type attribute, Type childType = null)
         {
             Type t = childType == null ? targetItem.Value.GetType() : childType;
             var pis = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
@@ -360,13 +333,11 @@ namespace Metroit.Spreadsheet.Utilities.Core
                     continue;
                 }
 
-
                 // 自前クラスの場合
-                var item2 = new TargetItem();
-                item2.Value = pi.GetValue(targetItem.Value);
+                var item2 = new TargetItem(pi.GetValue(targetItem.Value));
                 if (item2.Value != null)
                 {
-                    Parse(attribute, item2, item2.Value.GetType());
+                    Parse(item2, attribute);
                     if (item2.TargetProperties.Count > 0 || item2.Child.Count > 0)
                     {
                         targetItem.Child.Add(item2);
@@ -379,7 +350,12 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
     class TargetItem
     {
-        public object Value { get; set; }
+        public TargetItem(object value)
+        {
+            Value = value;
+        }
+
+        public object Value { get; }
 
         public List<PropertyInfo> TargetProperties { get; set; } = new List<PropertyInfo>();
 
