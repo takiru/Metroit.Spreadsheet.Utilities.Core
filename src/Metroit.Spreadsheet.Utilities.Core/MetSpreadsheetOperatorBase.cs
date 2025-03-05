@@ -65,6 +65,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
             //_parsedProperties = new List<PropertyInfo>();
             //Parse(value, typeof(CellOutputMapAttribute));
             _parsedProperties = new TargetItem();
+            _parsedProperties.Value = value;
             Parse(value, typeof(CellOutputMapAttribute), _parsedProperties);
 
             TestResult(_parsedProperties);
@@ -221,7 +222,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
         }
 
         /// <summary>
-        /// プリミティブ型のプロパティを対象プロパティとして追加する。
+        /// プリミティブ型のプロパティを対象プロパティとして追加を検証する。
         /// </summary>
         /// <param name="pi">検証を行うプロパティ。</param>
         /// <param name="safeType">Nullable を除いた安全な型。</param>
@@ -244,44 +245,62 @@ namespace Metroit.Spreadsheet.Utilities.Core
             return true;
         }
 
-        private bool TryAddArrayProperty(PropertyInfo pi, Type elementSafeType, Type attribute, object value, TargetItem targetItem)
+        /// <summary>
+        /// 配列のプロパティを対象プロパティとして追加する。
+        /// </summary>
+        /// <param name="pi">検証を行うプロパティ。</param>
+        /// <param name="elementSafeType">Nullable を除いた配列要素の安全な型。</param>
+        /// <param name="attribute">処理対象とする、プロパティに保有が必要な属性。</param>
+        /// <param name="value"></param>
+        /// <param name="targetItem">対象プロパティとして追加する対象アイテム。</param>
+        private void AddArrayProperty(PropertyInfo pi, Type elementSafeType, Type attribute, object value, TargetItem targetItem)
         {
+            if (value == null)
+            {
+                return;
+            }
+
+            // 配列要素がプリミティブ型
             if (IsPrimitiveOrNearPrimitive(elementSafeType))
             {
                 if (!HasTargetAttribute(pi, attribute))
                 {
-                    return false;
+                    return;
                 }
 
                 targetItem.TargetProperties.Add(pi);
-                return true;
+                return;
             }
 
+            // 配列要素がクラス
             var item = new TargetItem();
             item.Value = value;
-
-            if (item.Value != null)
+            Parse(item.Value, attribute, item, item.Value.GetType().GetElementType());
+            if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
             {
-                Parse(item.Value, attribute, item, item.Value.GetType().GetElementType());
-                if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
-                {
-                    targetItem.Child.Add(item);
-                }
+                targetItem.Child.Add(item);
             }
-            return true;
         }
 
-        private bool TryAddIListProperty(PropertyInfo pi, Type genericSafeType, Type attribute, object value, TargetItem targetItem)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pi"></param>
+        /// <param name="genericSafeType"></param>
+        /// <param name="attribute"></param>
+        /// <param name="value"></param>
+        /// <param name="targetItem"></param>
+        private void AddIListProperty(PropertyInfo pi, Type genericSafeType, Type attribute, object value, TargetItem targetItem)
         {
             // List<string> などのプリミティブの場合
             if (IsPrimitiveOrNearPrimitive(genericSafeType))
             {
                 if (!HasTargetAttribute(pi, attribute))
                 {
-                    return false;
+                    return;
                 }
                 targetItem.TargetProperties.Add(pi);
-                return true;
+                return;
             }
 
             //// 反復処理のあるジェネリックの場合は再帰的に解析する
@@ -296,7 +315,6 @@ namespace Metroit.Spreadsheet.Utilities.Core
                     targetItem.Child.Add(item);
                 }
             }
-            return true;
         }
 
         /// <summary>
@@ -317,10 +335,6 @@ namespace Metroit.Spreadsheet.Utilities.Core
             }
 
             var pis = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
-            if (childType == null)
-            {
-                targetItem.Value = value;
-            }
 
             foreach (var pi in pis)
             {
@@ -339,9 +353,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
                     if (safeType.IsArray)
                     {
                         var elementSafeType = Nullable.GetUnderlyingType(safeType.GetElementType()) ?? safeType.GetElementType();
-                        TryAddArrayProperty(pi, elementSafeType, attribute,
-                            pi.GetValue(value),
-                            targetItem);
+                        AddArrayProperty(pi, elementSafeType, attribute, pi.GetValue(value), targetItem);
                         continue;
                     }
 
@@ -353,9 +365,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
                     //// IListなら受け入れる
                     var genericSafeType = Nullable.GetUnderlyingType(safeType.GenericTypeArguments[0]) ?? safeType.GenericTypeArguments[0];
-                    TryAddIListProperty(pi, genericSafeType, attribute,
-                        pi.GetValue(value),
-                        targetItem);
+                    AddIListProperty(pi, genericSafeType, attribute, pi.GetValue(value), targetItem);
                     continue;
                 }
 
