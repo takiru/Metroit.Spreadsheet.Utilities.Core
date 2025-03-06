@@ -1,4 +1,5 @@
-﻿using Metroit.Spreadsheet.Utilities.Core.Mapping;
+﻿using Metroit.Spreadsheet.Utilities.Core.MapItem;
+using Metroit.Spreadsheet.Utilities.Core.Mapping;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -102,6 +103,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
             _parsedProperties = new TargetItem(value);
             Parse(_parsedProperties, typeof(CellOutputMapAttribute));
+            Write(_parsedProperties, 0, 0);
 
             TestResult(_parsedProperties);
 
@@ -418,6 +420,77 @@ namespace Metroit.Spreadsheet.Utilities.Core
                 targetItem.AddChild(item);
             }
         }
+
+        /// <summary>
+        /// 書き出しを行う。
+        /// </summary>
+        /// <param name="item">書き出しを行うプロパティ情報。</param>
+        /// <param name="mapIndex">マッピングする項目の書き出し開始インデックス。</param>
+        /// <param name="skip">マッピング方向へのスキップするセル数。</param>
+        private void Write(TargetItem item, int mapIndex, int skip)
+        {
+            foreach (var pi in item.Properties)
+            {
+                var mapItem = GetOutMapItem(item.Value, pi);
+
+            }
+
+            foreach (var child in item.Children)
+            {
+                Write(child, mapIndex, skip);
+            }
+        }
+
+        /// <summary>
+        /// 書き出しマップ情報を取得する。
+        /// </summary>
+        /// <param name="obj">プロパティが含まれるオブジェクト。</param>
+        /// <param name="pi">プロパティ。</param>
+        /// <returns>書き出しマップ情報。</returns>
+        private CellOutputMapItem GetOutMapItem(object obj, PropertyInfo pi)
+        {
+            var mapAttr = pi.GetCustomAttribute<CellOutputMapAttribute>();
+            var mapItem = new CellOutputMapItem(pi.Name, mapAttr.Row, mapAttr.Column, mapAttr.Formula);
+
+            // ユーザー制御に伴うセル位置の変更
+            ConfigureOutputCell(obj, mapItem);
+
+            // ユーザー制御に伴う書き出しの無視(特定条件の時だけ書き出ししたくないとか)
+            if (IgnoreOutputCell(obj, mapItem))
+            {
+                return null;
+            }
+
+            return mapItem;
+        }
+
+        /// <summary>
+        /// ユーザー制御に伴うセル位置の変更を行う。
+        /// </summary>
+        /// <param name="obj">プロパティが含まれるオブジェクト。</param>
+        /// <param name="mapItem">書き出しマップ情報。</param>
+        private void ConfigureOutputCell(object obj, CellOutputMapItem mapItem)
+        {
+            // ユーザー制御に伴うセル位置の変更
+            var outputConfig = obj as IOutputCellConfiguration;
+            if (outputConfig != null)
+            {
+                outputConfig.ConfigureCell(mapItem, Param);
+            }
+        }
+
+        private bool IgnoreOutputCell(object obj, IReadOnlyCellMapItem mapItem)
+        {
+            // ユーザー制御に伴う書き出しの無視
+            var ignoreConfig = obj as IOutputIgnoreConfiguration;
+            if (ignoreConfig.IgnoreOutput(mapItem, Param))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
 
 
 
