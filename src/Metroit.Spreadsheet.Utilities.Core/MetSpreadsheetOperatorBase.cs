@@ -72,43 +72,68 @@ namespace Metroit.Spreadsheet.Utilities.Core
         // TODO: 解析した結果を試しに出力してみる
         private void TestResult(TargetItem item)
         {
-            foreach (var pi in item.TargetProperties)
+            foreach (var pi in item.Properties)
             {
-                // 対象の値自体が IEnumerable なら、要素が複数ある(List<クラス>とか)
-                if (item.Value is IEnumerable enumItems)
+                if (pi.PropertyType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
                 {
-                    foreach (var enumItem in enumItems)
+                    var values = (IDictionary)pi.GetValue(item.Value);
+                    foreach (var value in values.Values)
                     {
-                        var a = pi.GetValue(enumItem);
-                        Console.WriteLine(a);
+                        Console.WriteLine(value);
+                    }
+                    continue;
+                }
+
+                if (item.Value.GetType().GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+                {
+                    var dictionary = (IDictionary)item.Value;
+                    object[] listAry = new object[dictionary.Values.Count];
+                    dictionary.Values.CopyTo(listAry, 0);
+                    var list = listAry.ToList();
+                    foreach (var listItem in list)
+                    {
+                        var value = pi.GetValue(listItem);
+                        Console.WriteLine(value);
                     }
                 }
                 else
                 {
-                    var a = pi.GetValue(item.Value);
-
-                    // プロパティの値が配列なら
-                    if (a is Array arys)
+                    // 対象の値自体が IEnumerable なら、要素が複数ある(List<クラス>とか)
+                    if (item.Value is IEnumerable enumItems)
                     {
-                        foreach (var ary in arys)
+                        foreach (var enumItem in enumItems)
                         {
-                            Console.WriteLine(ary);
+                            var a = pi.GetValue(enumItem);
+                            Console.WriteLine(a);
                         }
                     }
                     else
                     {
-                        if (a is string || a.GetType().IsPrimitive)
+                        var a = pi.GetValue(item.Value);
+
+                        // プロパティの値が配列なら
+                        if (a is Array arys)
                         {
-                            Console.WriteLine(a);
+                            foreach (var ary in arys)
+                            {
+                                Console.WriteLine(ary);
+                            }
                         }
                         else
                         {
-                            // プロパティの値が IEnumerable なら
-                            if (a is IEnumerable enumItems2)
+                            if (a is string || a.GetType().IsPrimitive)
                             {
-                                foreach (var enumItem in enumItems2)
+                                Console.WriteLine(a);
+                            }
+                            else
+                            {
+                                // プロパティの値が IEnumerable なら
+                                if (a is IEnumerable enumItems2)
                                 {
-                                    Console.WriteLine(enumItem);
+                                    foreach (var enumItem in enumItems2)
+                                    {
+                                        Console.WriteLine(enumItem);
+                                    }
                                 }
                             }
                         }
@@ -116,7 +141,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
                 }
             }
 
-            foreach (var c in item.Child)
+            foreach (var c in item.Children)
             {
                 TestResult(c);
             }
@@ -159,25 +184,118 @@ namespace Metroit.Spreadsheet.Utilities.Core
         private TargetItem _parsedProperties;
 
         /// <summary>
-        /// 型がプリミティブ型もしくはプリミティブ型に近い型かどうかを取得する。
-        /// プリミティブ型に近い型は string, DateTime, decimal, Timespan 。
+        /// オブジェクトを解析し、処理対象となるプロパティ要素を認識する。
         /// </summary>
-        /// <param name="safeType">Nullable を除いた安全な型。</param>
-        /// <returns>プリミティブ型もしくはプリミティブ型に近い型の場合は true, それ以外は false。</returns>
-        private bool IsPrimitiveOrNearPrimitive(Type safeType)
+        /// <param name="targetItem">対象オブジェクト。</param>
+        /// <param name="attribute">処理対象属性。</param>
+        /// <param name="innerType">再帰処理によって解析を行う配列要素やジェネリックの型。</param>
+        private void Parse(TargetItem targetItem, Type attribute, Type innerType = null)
         {
-            // プリミティブ型もしくは特定の型の場合、判定する
-            if (safeType.IsPrimitive)
+            Type t = innerType == null ? targetItem.Value.GetType() : innerType;
+            var pis = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
+
+            foreach (var pi in pis)
             {
-                return true;
+                Type safeType;
+                switch (GetPropertyTypeFactor(pi.PropertyType, out safeType))
+                {
+                    case PropertyTypeFactor.Primitive:
+                    case PropertyTypeFactor.NearPrimitive:
+                        AddPrimitiveProperty(pi, attribute, targetItem);
+                        break;
+
+                    case PropertyTypeFactor.NotEnumerable:
+                        AddNotEnumerableProperty(pi, attribute, pi.GetValue(targetItem.Value), targetItem);
+                        break;
+
+                    case PropertyTypeFactor.Array:
+                        AddArrayProperty(pi, safeType, attribute, pi.GetValue(targetItem.Value), targetItem);
+                        break;
+
+                    case PropertyTypeFactor.IList:
+                        AddIListProperty(pi, safeType, attribute, pi.GetValue(targetItem.Value), targetItem);
+                        break;
+
+                    case PropertyTypeFactor.IDictionary:
+                        AddIDictionaryProperty(pi, safeType, attribute, pi.GetValue(targetItem.Value), targetItem);
+                        break;
+                }
             }
-            if (safeType == typeof(string) || safeType == typeof(DateTime) ||
-                safeType == typeof(decimal) || safeType == typeof(TimeSpan))
+        }
+
+        /// <summary>
+        /// 解析に必要な、型が有する要素を求める。
+        /// 複数の要素を保有していても、下記の順で判断および取得を行う。
+        ///   1. プリミティブ型かどうか。
+        ///   2. プリミティブ型に近い型かどうか。
+        ///   3. 反復処理を持たない参照型かどうか。
+        ///   4. 配列かどうか。
+        ///   5. IList を実装しているかどうか。
+        ///   6. IDictionary を実装しているかどうか。
+        /// </summary>
+        /// <param name="type">検査する型。</param>
+        /// <param name="safeType">
+        /// Nullable を除いた安全な型。
+        /// 配列の場合は要素の型、IListの場合はジェネリックの型、IDictionaryの場合は第二ジェネリックの型を返却する。
+        /// </param>
+        /// <returns>検査する型が有している要素。</returns>
+        /// <remarks>
+        /// プリミティブ型に近い型とは、string, decimal, DateTime, TimeSpan を示す。
+        /// </remarks>
+        private PropertyTypeFactor GetPropertyTypeFactor(Type type, out Type safeType)
+        {
+            var challengeType = Nullable.GetUnderlyingType(type) ?? type;
+
+            // プリミティブ型
+            if (challengeType.IsPrimitive)
             {
-                return true;
+                safeType = challengeType;
+                return PropertyTypeFactor.Primitive;
             }
 
-            return false;
+            // プリミティブ型に近い型
+            var nearPrimitiveTypes = new Type[] {
+                typeof(string),
+                typeof(decimal),
+                typeof(DateTime),
+                typeof(TimeSpan)
+            };
+            if (nearPrimitiveTypes.Contains(challengeType))
+            {
+                safeType = challengeType;
+                return PropertyTypeFactor.NearPrimitive;
+            }
+
+            // 反復処理を持たない参照型
+            if (!challengeType.GetInterfaces().Any(x => x == typeof(IEnumerable)))
+            {
+                safeType = challengeType;
+                return PropertyTypeFactor.NotEnumerable;
+            }
+
+            // 配列
+            if (challengeType.IsArray)
+            {
+                safeType = Nullable.GetUnderlyingType(challengeType.GetElementType()) ?? challengeType.GetElementType();
+                return PropertyTypeFactor.Array;
+            }
+
+            // ILIst<>
+            if (challengeType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>)))
+            {
+                safeType = Nullable.GetUnderlyingType(challengeType.GenericTypeArguments[0]) ?? challengeType.GenericTypeArguments[0];
+                return PropertyTypeFactor.IList;
+            }
+
+            // IDictionary<,>
+            if (challengeType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+            {
+                safeType = Nullable.GetUnderlyingType(challengeType.GenericTypeArguments[1]) ?? challengeType.GenericTypeArguments[1];
+                return PropertyTypeFactor.IDictionary;
+            }
+
+            safeType = null;
+            return PropertyTypeFactor.Unknown;
         }
 
         /// <summary>
@@ -197,27 +315,42 @@ namespace Metroit.Spreadsheet.Utilities.Core
         }
 
         /// <summary>
-        /// プリミティブ型のプロパティを対象プロパティとして追加を検証する。
+        /// プリミティブ型のプロパティを対象プロパティとして追加する。
         /// </summary>
         /// <param name="pi">検証を行うプロパティ。</param>
-        /// <param name="safeType">Nullable を除いた安全な型。</param>
         /// <param name="attribute">処理対象とする、プロパティに保有が必要な属性。</param>
         /// <param name="targetItem">対象プロパティとして追加する対象アイテム。</param>
-        /// <returns>対象プロパティとして追加された場合は true, それ以外は false。</returns>
-        private bool TryAddPrimitiveProperty(PropertyInfo pi, Type safeType, Type attribute, TargetItem targetItem)
+        private void AddPrimitiveProperty(PropertyInfo pi, Type attribute, TargetItem targetItem)
         {
-            if (!IsPrimitiveOrNearPrimitive(safeType))
-            {
-                return false;
-            }
-
             if (!HasTargetAttribute(pi, attribute))
             {
-                return false;
+                return;
             }
 
-            targetItem.TargetProperties.Add(pi);
-            return true;
+            targetItem.AddProperty(pi);
+        }
+
+        /// <summary>
+        /// 反復処理を持たないプロパティを対象プロパティとして追加する。
+        /// </summary>
+        /// <param name="pi">検証を行うプロパティ。</param>
+        /// <param name="attribute">処理対象とする、プロパティに保有が必要な属性。</param>
+        /// <param name="value">追加を行うオブジェクト。</param>
+        /// <param name="targetItem">対象プロパティとして追加する対象アイテム。</param>
+        private void AddNotEnumerableProperty(PropertyInfo pi, Type attribute, object value, TargetItem targetItem)
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            // クラスを再帰的に解析する
+            var item = new TargetItem(value);
+            Parse(item, attribute);
+            if (item.Properties.Count > 0 || item.Children.Count > 0)
+            {
+                targetItem.AddChild(item);
+            }
         }
 
         /// <summary>
@@ -235,29 +368,26 @@ namespace Metroit.Spreadsheet.Utilities.Core
                 return;
             }
 
-            // 配列要素がプリミティブ
-            if (IsPrimitiveOrNearPrimitive(elementSafeType))
+            // 配列要素がプリミティブ型もしくは近い型は単純追加する
+            switch (GetPropertyTypeFactor(elementSafeType, out _))
             {
-                if (!HasTargetAttribute(pi, attribute))
-                {
+                case PropertyTypeFactor.Primitive:
+                case PropertyTypeFactor.NearPrimitive:
+                    AddPrimitiveProperty(pi, attribute, targetItem);
                     return;
-                }
-
-                targetItem.TargetProperties.Add(pi);
-                return;
             }
 
             // 配列要素がクラスの場合は再帰的に解析する
             var item = new TargetItem(value);
             Parse(item, attribute, item.Value.GetType().GetElementType());
-            if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
+            if (item.Properties.Count > 0 || item.Children.Count > 0)
             {
-                targetItem.Child.Add(item);
+                targetItem.AddChild(item);
             }
         }
 
         /// <summary>
-        /// IList を持つプロパティを対象プロパティとして追加する。
+        /// IList&lt;&gt; を持つプロパティを対象プロパティとして追加する。
         /// </summary>
         /// <param name="pi">検証を行うプロパティ。</param>
         /// <param name="genericSafeType">Nullable を除いたジェネリックの安全な型。</param>
@@ -271,113 +401,55 @@ namespace Metroit.Spreadsheet.Utilities.Core
                 return;
             }
 
-            // List<string> などのジェネリックがプリミティブ
-            if (IsPrimitiveOrNearPrimitive(genericSafeType))
+            // List<string> などのジェネリックがプリミティブ型もしくは近い型は単純追加する
+            switch (GetPropertyTypeFactor(genericSafeType, out _))
             {
-                if (!HasTargetAttribute(pi, attribute))
-                {
+                case PropertyTypeFactor.Primitive:
+                case PropertyTypeFactor.NearPrimitive:
+                    AddPrimitiveProperty(pi, attribute, targetItem);
                     return;
-                }
-                targetItem.TargetProperties.Add(pi);
-                return;
             }
 
             // ジェネリックがクラスの場合は再帰的に解析する
             var item = new TargetItem(value);
             Parse(item, attribute, item.Value.GetType().GenericTypeArguments[0]);
-            if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
+            if (item.Properties.Count > 0 || item.Children.Count > 0)
             {
-                targetItem.Child.Add(item);
+                targetItem.AddChild(item);
             }
         }
 
         /// <summary>
-        /// 単純クラスを対象プロパティとして追加する。
+        /// IDictionary&lt;,&gt; を持つプロパティを対象プロパティとして追加する。
         /// </summary>
         /// <param name="pi">検証を行うプロパティ。</param>
+        /// <param name="genericSafeType">Nullable を除いたジェネリックの安全な型。</param>
         /// <param name="attribute">処理対象とする、プロパティに保有が必要な属性。</param>
         /// <param name="value">追加を行うオブジェクト。</param>
         /// <param name="targetItem">対象プロパティとして追加する対象アイテム。</param>
-        private void AddSimpleClassProperty(PropertyInfo pi, Type attribute, object value, TargetItem targetItem)
+        private void AddIDictionaryProperty(PropertyInfo pi, Type genericSafeType, Type attribute, object value, TargetItem targetItem)
         {
             if (value == null)
             {
                 return;
             }
 
-            // クラスを再帰的に解析する
+            // Dictionary<int, string> などの第二ジェネリックがプリミティブ型もしくは近い型は単純追加する
+            switch (GetPropertyTypeFactor(genericSafeType, out _))
+            {
+                case PropertyTypeFactor.Primitive:
+                case PropertyTypeFactor.NearPrimitive:
+                    AddPrimitiveProperty(pi, attribute, targetItem);
+                    return;
+            }
+
+            // 第二ジェネリックがクラスの場合は再帰的に解析する
             var item = new TargetItem(value);
-            Parse(item, attribute);
-            if (item.TargetProperties.Count > 0 || item.Child.Count > 0)
+            Parse(item, attribute, item.Value.GetType().GenericTypeArguments[1]);
+            if (item.Properties.Count > 0 || item.Children.Count > 0)
             {
-                targetItem.Child.Add(item);
+                targetItem.AddChild(item);
             }
         }
-
-        /// <summary>
-        /// オブジェクトを解析し、処理対象となるプロパティ要素を認識する。
-        /// </summary>
-        /// <param name="value">対象オブジェクト。</param>
-        /// <param name="attribute">処理対象属性。</param>
-        private void Parse(TargetItem targetItem, Type attribute, Type childType = null)
-        {
-            Type t = childType == null ? targetItem.Value.GetType() : childType;
-            var pis = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
-
-            foreach (var pi in pis)
-            {
-                var safeType = Nullable.GetUnderlyingType(pi.PropertyType) ?? pi.PropertyType;
-
-                // プリミティブ型を想定して追加する
-                if (TryAddPrimitiveProperty(pi, safeType, attribute, targetItem))
-                {
-                    continue;
-                }
-
-                // 反復処理のない単純クラス
-                if (!safeType.GetInterfaces().Where(x => x == typeof(IEnumerable)).Any())
-                {
-                    AddSimpleClassProperty(pi, attribute, pi.GetValue(targetItem.Value), targetItem);
-                    continue;
-                }
-
-                // 配列なら受け入れる
-                if (safeType.IsArray)
-                {
-                    var elementSafeType = Nullable.GetUnderlyingType(safeType.GetElementType()) ?? safeType.GetElementType();
-                    AddArrayProperty(pi, elementSafeType, attribute, pi.GetValue(targetItem.Value), targetItem);
-                    continue;
-                }
-
-                // IList<> 以外の IEnumerable は受け付けない
-                if (!safeType.GetInterfaces().Where(x => x == typeof(IList)).Any())
-                {
-                    continue;
-                }
-                if (safeType.GenericTypeArguments.Length < 1)
-                {
-                    continue;
-                }
-
-                // IList<>
-                var genericSafeType = Nullable.GetUnderlyingType(safeType.GenericTypeArguments[0]) ?? safeType.GenericTypeArguments[0];
-                AddIListProperty(pi, genericSafeType, attribute, pi.GetValue(targetItem.Value), targetItem);
-            }
-        }
-    }
-
-
-    class TargetItem
-    {
-        public TargetItem(object value)
-        {
-            Value = value;
-        }
-
-        public object Value { get; }
-
-        public List<PropertyInfo> TargetProperties { get; set; } = new List<PropertyInfo>();
-
-        public List<TargetItem> Child { get; set; } = new List<TargetItem>();
     }
 }

@@ -27,6 +27,12 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
                 { 2, "Dic2" },
                 { 3, "Dic3" }
             };
+            value.DictionaryItems = new Dictionary<int, ChildItem>()
+            {
+                {1, new ChildItem(){ ChildHoge ="DictionaryItem1"} },
+                {2, new ChildItem(){ ChildHoge ="DictionaryItem2"} },
+                {3, new ChildItem(){ ChildHoge ="DictionaryItem3"} }
+            };
             value.ListStringValues = new List<string>()
             {
                 "ListString1",
@@ -91,6 +97,8 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
 
         [CellOutputMap(Column = 3)]
         public Dictionary<int, string> DictionaryValues { get; set; }
+
+        public Dictionary<int, ChildItem> DictionaryItems { get; set; }
 
         [CellOutputMap(Column = 1)]
         public List<string> ListStringValues { get; set; }
