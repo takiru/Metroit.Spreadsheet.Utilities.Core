@@ -2,10 +2,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Security.AccessControl;
 
 namespace Metroit.Spreadsheet.Utilities.Core
 {
@@ -14,34 +13,67 @@ namespace Metroit.Spreadsheet.Utilities.Core
     /// </summary>
     public abstract class MetSpreadsheetOperatorBase
     {
-        //public object Param { get; } = null;
+        /// <summary>
+        /// 追加パラメーター情報を取得します。
+        /// </summary>
+        public object Param { get; private set; } = null;
 
+        /// <summary>
+        /// 読み込み前に発生します。
+        /// </summary>
+        protected event CancelEventHandler PreReading;
 
+        /// <summary>
+        /// 読み込み前に行います。
+        /// </summary>
+        /// <param name="e">キャンセルできるイベントのデータ。</param>
+        protected virtual void OnPreReading(CancelEventArgs e)
+        {
+            PreReading?.Invoke(this, e);
+        }
 
-        //protected internal MetSpreadsheetOperatorBase(object param)
-        //{
-        //    Param = param;
-        //}
+        protected abstract void OnRead<T>();
 
+        /// <summary>
+        /// 読み込み後に行います。
+        /// </summary>
+        protected virtual void OnRead() { }
+
+        /// <summary>
+        /// 書き出し前に発生します。
+        /// </summary>
+        protected event CancelEventHandler PreWriting;
+
+        /// <summary>
+        /// 書き出し前に行います。
+        /// </summary>
+        /// <param name="e">キャンセルできるイベントのデータ。</param>
+        protected virtual void OnPreWriting(CancelEventArgs e)
+        {
+            PreWriting?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// 書き出しを行います。
+        /// </summary>
+        protected abstract void OnWrite();
+
+        /// <summary>
+        /// 書き出し後に行います。
+        /// </summary>
+        protected virtual void OnWrote() { }
+
+        /// <summary>
+        /// 処理対象となったプロパティ情報。
+        /// </summary>
+        private TargetItem _parsedProperties;
+
+        /// <summary>
+        /// 新しいインスタンスを生成します。
+        /// </summary>
         protected MetSpreadsheetOperatorBase()
         {
-
-        }
-
-        /// <summary>
-        /// 書き出し前の制御。
-        /// </summary>
-        protected virtual void OnPreWriting()
-        {
-
-        }
-
-        /// <summary>
-        /// 書き出し前の制御。
-        /// </summary>
-        protected virtual void OnPreReading()
-        {
-
+            
         }
 
         /// <summary>
@@ -53,98 +85,27 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <remarks>
         /// value は null 以外でなければなりません。
         /// </remarks>
-        public void Write(object value, object param)
+        internal void Write(object value, object param)
         {
             if (value == null)
             {
                 throw new ArgumentNullException(nameof(value));
             }
 
-            OnPreWriting();
+            Param = param;
+            var e = new CancelEventArgs(false);
+            OnPreWriting(e);
+            if (e.Cancel)
+            {
+                return;
+            }
 
             _parsedProperties = new TargetItem(value);
             Parse(_parsedProperties, typeof(CellOutputMapAttribute));
 
             TestResult(_parsedProperties);
-            Console.WriteLine("Finish");
-        }
 
-        // TODO: 解析した結果を試しに出力してみる
-        private void TestResult(TargetItem item)
-        {
-            foreach (var pi in item.Properties)
-            {
-                if (pi.PropertyType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
-                {
-                    var values = (IDictionary)pi.GetValue(item.Value);
-                    foreach (var value in values.Values)
-                    {
-                        Console.WriteLine(value);
-                    }
-                    continue;
-                }
-
-                if (item.Value.GetType().GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
-                {
-                    var dictionary = (IDictionary)item.Value;
-                    object[] listAry = new object[dictionary.Values.Count];
-                    dictionary.Values.CopyTo(listAry, 0);
-                    var list = listAry.ToList();
-                    foreach (var listItem in list)
-                    {
-                        var value = pi.GetValue(listItem);
-                        Console.WriteLine(value);
-                    }
-                }
-                else
-                {
-                    // 対象の値自体が IEnumerable なら、要素が複数ある(List<クラス>とか)
-                    if (item.Value is IEnumerable enumItems)
-                    {
-                        foreach (var enumItem in enumItems)
-                        {
-                            var a = pi.GetValue(enumItem);
-                            Console.WriteLine(a);
-                        }
-                    }
-                    else
-                    {
-                        var a = pi.GetValue(item.Value);
-
-                        // プロパティの値が配列なら
-                        if (a is Array arys)
-                        {
-                            foreach (var ary in arys)
-                            {
-                                Console.WriteLine(ary);
-                            }
-                        }
-                        else
-                        {
-                            if (a is string || a.GetType().IsPrimitive)
-                            {
-                                Console.WriteLine(a);
-                            }
-                            else
-                            {
-                                // プロパティの値が IEnumerable なら
-                                if (a is IEnumerable enumItems2)
-                                {
-                                    foreach (var enumItem in enumItems2)
-                                    {
-                                        Console.WriteLine(enumItem);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            foreach (var c in item.Children)
-            {
-                TestResult(c);
-            }
+            OnWrote();
         }
 
         /// <summary>
@@ -159,10 +120,10 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <exception cref="ArgumentNullException">value が null です。</exception>
         /// <exception cref="ArgumentOutOfRangeException">mapIndex は 0 以上でなければなりません。</exception>
         /// <remarks>
-        /// value は null 以外でなければなりません。
+        /// value は null 以外でなければなりません。<br/>
         /// mapIndex は 0 以上でなければなりません。
         /// </remarks>
-        protected internal void Write(object value, int mapIndex, MapDirection mapDirection, int skip, object param)
+        internal void Write(object value, int mapIndex, MapDirection mapDirection, int skip, object param)
         {
             if (value == null)
             {
@@ -173,15 +134,21 @@ namespace Metroit.Spreadsheet.Utilities.Core
                 throw new ArgumentOutOfRangeException(nameof(mapIndex));
             }
 
-            OnPreWriting();
+            Param = param;
+            var e = new CancelEventArgs(false);
+            OnPreWriting(e);
+            if (e.Cancel)
+            {
+                return;
+            }
 
-            //_parsedProperties = new List<PropertyInfo>();
-            //_parsedProperties = new TargetItem();
-            //Parse(value, typeof(CellOutputMapAttribute), _parsedProperties);
+            _parsedProperties = new TargetItem(value);
+            Parse(_parsedProperties, typeof(CellOutputMapAttribute));
+
+            TestResult(_parsedProperties);
+
+            OnWrote();
         }
-
-
-        private TargetItem _parsedProperties;
 
         /// <summary>
         /// オブジェクトを解析し、処理対象となるプロパティ要素を認識する。
@@ -449,6 +416,89 @@ namespace Metroit.Spreadsheet.Utilities.Core
             if (item.Properties.Count > 0 || item.Children.Count > 0)
             {
                 targetItem.AddChild(item);
+            }
+        }
+
+
+
+
+
+
+        // TODO: 解析した結果を試しに出力してみる
+        private void TestResult(TargetItem item)
+        {
+            foreach (var pi in item.Properties)
+            {
+                if (pi.PropertyType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+                {
+                    var values = (IDictionary)pi.GetValue(item.Value);
+                    foreach (var value in values.Values)
+                    {
+                        Console.WriteLine(value);
+                    }
+                    continue;
+                }
+
+                if (item.Value.GetType().GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+                {
+                    var dictionary = (IDictionary)item.Value;
+                    object[] listAry = new object[dictionary.Values.Count];
+                    dictionary.Values.CopyTo(listAry, 0);
+                    var list = listAry.ToList();
+                    foreach (var listItem in list)
+                    {
+                        var value = pi.GetValue(listItem);
+                        Console.WriteLine(value);
+                    }
+                }
+                else
+                {
+                    // 対象の値自体が IEnumerable なら、要素が複数ある(List<クラス>とか)
+                    if (item.Value is IEnumerable enumItems)
+                    {
+                        foreach (var enumItem in enumItems)
+                        {
+                            var a = pi.GetValue(enumItem);
+                            Console.WriteLine(a);
+                        }
+                    }
+                    else
+                    {
+                        var a = pi.GetValue(item.Value);
+
+                        // プロパティの値が配列なら
+                        if (a is Array arys)
+                        {
+                            foreach (var ary in arys)
+                            {
+                                Console.WriteLine(ary);
+                            }
+                        }
+                        else
+                        {
+                            if (a is string || a.GetType().IsPrimitive)
+                            {
+                                Console.WriteLine(a);
+                            }
+                            else
+                            {
+                                // プロパティの値が IEnumerable なら
+                                if (a is IEnumerable enumItems2)
+                                {
+                                    foreach (var enumItem in enumItems2)
+                                    {
+                                        Console.WriteLine(enumItem);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (var c in item.Children)
+            {
+                TestResult(c);
             }
         }
     }

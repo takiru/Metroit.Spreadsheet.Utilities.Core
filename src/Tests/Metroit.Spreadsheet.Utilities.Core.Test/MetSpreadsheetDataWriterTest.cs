@@ -76,6 +76,16 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
         {
 
         }
+
+        protected override void OnRead<T>()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void OnWrite()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class Item

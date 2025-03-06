@@ -39,7 +39,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// シートへセルの書き出しを行います。
         /// </summary>
         /// <param name="value">書き出しを行うオブジェクト。</param>
-        /// <param name="param">実行パラメーター。</param>
+        /// <param name="param">追加パラメーター情報。</param>
         /// <exception cref="ArgumentNullException">value が null です。</exception>
         /// <remarks>
         /// value は null 以外でなければなりません。
@@ -59,7 +59,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <exception cref="ArgumentNullException">value が null です。</exception>
         /// <exception cref="ArgumentOutOfRangeException">mapIndex は 0 以上でなければなりません。</exception>
         /// <remarks>
-        /// value は null 以外でなければなりません。
+        /// value は null 以外でなければなりません。<br/>
         /// mapIndex は 0 以上でなければなりません。
         /// </remarks>
         public void Write(object value, int mapIndex, MapDirection mapDirection)
@@ -74,11 +74,11 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <param name="value">書き出しを行うオブジェクト。</param>
         /// <param name="mapIndex">マッピングする項目の書き出し開始インデックス。</param>
         /// <param name="mapDirection">マッピング方向。</param>
-        /// <param name="param">実行パラメーター。</param>
+        /// <param name="param">追加パラメーター情報。</param>
         /// <exception cref="ArgumentNullException">value が null です。</exception>
         /// <exception cref="ArgumentOutOfRangeException">mapIndex は 0 以上でなければなりません。</exception>
         /// <remarks>
-        /// value は null 以外でなければなりません。
+        /// value は null 以外でなければなりません。<br/>
         /// mapIndex は 0 以上でなければなりません。
         /// </remarks>
         public void Write(object value, int mapIndex, MapDirection mapDirection, object param)
@@ -97,7 +97,9 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <exception cref="ArgumentNullException">value が null です。</exception>
         /// <exception cref="ArgumentOutOfRangeException">mapIndex は 0 以上でなければなりません。</exception>
         /// <remarks>
-        /// value は null 以外でなければなりません。
+        /// マッピング方向へのスキップするセル数は、書き出しを行うオブジェクトが複数要素あった場合に機能します。
+        /// <br/>
+        /// value は null 以外でなければなりません。<br/>
         /// mapIndex は 0 以上でなければなりません。
         /// </remarks>
         public void Write(object value, int mapIndex, MapDirection mapDirection, int skip)
@@ -113,11 +115,13 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <param name="mapIndex">マッピングする項目の書き出し開始インデックス。</param>
         /// <param name="mapDirection">マッピング方向。</param>
         /// <param name="skip">マッピング方向へのスキップするセル数。</param>
-        /// <param name="param">実行パラメーター。</param>
+        /// <param name="param">追加パラメーター情報。</param>
         /// <exception cref="ArgumentNullException">value が null です。</exception>
         /// <exception cref="ArgumentOutOfRangeException">mapIndex は 0 以上でなければなりません。</exception>
         /// <remarks>
-        /// value は null 以外でなければなりません。
+        /// マッピング方向へのスキップするセル数は、書き出しを行うオブジェクトが複数要素あった場合に機能します。
+        /// <br/>
+        /// value は null 以外でなければなりません。<br/>
         /// mapIndex は 0 以上でなければなりません。
         /// </remarks>
         public void Write(object value, int mapIndex, MapDirection mapDirection, int skip, object param)
