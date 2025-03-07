@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Schema;
 
 namespace Metroit.Spreadsheet.Utilities.Core
 {
@@ -74,7 +75,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// </summary>
         protected MetSpreadsheetOperatorBase()
         {
-            
+
         }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
             _parsedProperties = new TargetItem(value);
             Parse(_parsedProperties, typeof(CellOutputMapAttribute));
-            Write(_parsedProperties, 0, 0);
+            Write(_parsedProperties, 0, MapDirection.None, 0);
 
             TestResult(_parsedProperties);
 
@@ -426,20 +427,85 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// </summary>
         /// <param name="item">書き出しを行うプロパティ情報。</param>
         /// <param name="mapIndex">マッピングする項目の書き出し開始インデックス。</param>
+        /// <param name="mapDirection">マッピング方向。</param>
         /// <param name="skip">マッピング方向へのスキップするセル数。</param>
-        private void Write(TargetItem item, int mapIndex, int skip)
+        private void Write(TargetItem item, int mapIndex, MapDirection mapDirection, int skip)
         {
+            var internalMapIndex = mapIndex;
+
             foreach (var pi in item.Properties)
             {
                 var mapItem = GetOutMapItem(item.Value, pi);
 
+                // 書き出しが無視された場合は書き出しを行わない
+                if (mapItem == null)
+                {
+                    continue;
+                }
+
+
+                // 結合
+                var mergeAttr = Attribute.GetCustomAttribute(pi, typeof(CellMergeAttribute)) as CellMergeAttribute;
+                CellMergeItem mergeItem = null;
+                if (mergeAttr != null)
+                {
+                    var endRow = mergeAttr.Row;
+                    var endColumn = mergeAttr.Column;
+                    if (mergeAttr.Position == CellMergePosition.Relative)
+                    {
+                        endRow = mapItem.Row + mergeAttr.Row;
+                        endColumn = mapItem.Column + mergeAttr.Column;
+                    }
+
+                    mergeItem = new CellMergeItem(mergeAttr.Row, mergeAttr.Column, mergeAttr.Position, endRow, endColumn);
+                }
+                MergeCell(pi, mapItem);
+
             }
 
+            // 子要素の書き込み
             foreach (var child in item.Children)
             {
-                Write(child, mapIndex, skip);
+                Write(child, mapIndex, mapDirection, skip);
+            }
+
+            // マッピングするインデックスを加算
+            if (mapDirection != MapDirection.None)
+            {
+                internalMapIndex += skip;
             }
         }
+
+
+        /// <summary>
+        /// 結合を行う。
+        /// </summary>
+        /// <param name="obj">プロパティが含まれるオブジェクト。</param>
+        /// <param name="pi">プロパティ。</param>
+        /// <returns>書き出しマップ情報。</returns>
+        private CellOutputMapItem MergeCell(PropertyInfo pi, CellOutputMapItem mapItem)
+        {
+            // 結合
+            var mergeAttr = pi.GetCustomAttribute<CellMergeAttribute>();
+            if (mergeAttr == null)
+            {
+                return mapItem;
+            }
+
+            CellMergeItem mergeItem = null;
+            var endRow = mergeAttr.Row;
+            var endColumn = mergeAttr.Column;
+            if (mergeAttr.Position == CellMergePosition.Relative)
+            {
+                endRow = mapItem.Row + mergeAttr.Row;
+                endColumn = mapItem.Column + mergeAttr.Column;
+            }
+
+            mergeItem = new CellMergeItem(mergeAttr.Row, mergeAttr.Column, mergeAttr.Position, endRow, endColumn);
+
+            return mapItem;
+        }
+
 
         /// <summary>
         /// 書き出しマップ情報を取得する。
@@ -479,13 +545,20 @@ namespace Metroit.Spreadsheet.Utilities.Core
             }
         }
 
+        /// <summary>
+        /// ユーザー制御に伴う書き出しの無視を行う。
+        /// 主に、特定条件の時だけ書き出しを行いたくないなどのユーザー要件に応じた制御。
+        /// </summary>
+        /// <param name="obj">プロパティが含まれるオブジェクト。</param>
+        /// <param name="mapItem">書き出しマップ情報。</param>
+        /// <returns>書き出しを無視する場合は true, それ以外は false。</returns>
         private bool IgnoreOutputCell(object obj, IReadOnlyCellMapItem mapItem)
         {
             // ユーザー制御に伴う書き出しの無視
             var ignoreConfig = obj as IOutputIgnoreConfiguration;
-            if (ignoreConfig.IgnoreOutput(mapItem, Param))
+            if (ignoreConfig != null)
             {
-                return true;
+                return ignoreConfig.IgnoreOutput(mapItem, Param);
             }
 
             return false;

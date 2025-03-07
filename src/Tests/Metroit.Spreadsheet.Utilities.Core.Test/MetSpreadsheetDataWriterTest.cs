@@ -1,4 +1,5 @@
-﻿using Metroit.Spreadsheet.Utilities.Core.Mapping;
+﻿using Metroit.Spreadsheet.Utilities.Core.MapItem;
+using Metroit.Spreadsheet.Utilities.Core.Mapping;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,7 +66,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
             // これは通用する。取得するところのインデックスがちがくても、ちゃんと取ってこれる。同じクラス情報という認識を持てている
             //var pi = value.ListChildItems[0].GetType().GetProperty("ChildHoge");
             //pi.GetValue(value.ListChildItems[1]);
-
+;
             writer.Write(value);
         }
     }
@@ -88,7 +89,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
         }
     }
 
-    class Item
+    class Item : IOutputCellConfiguration, IOutputIgnoreConfiguration
     {
         [CellOutputMap(Column = 0)]
         public char CharValue { get; set; }
@@ -124,6 +125,17 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
         public NonGrandChildItem NonGrandChildItem { get; set; }
 
         public GrandChildItem2 GrandChildItem2 { get; set; }
+
+        public void ConfigureCell(CellOutputMapItem map, object param)
+        {
+            Console.WriteLine($"ConfigureCell!: {map.Name}");
+        }
+
+        public bool IgnoreOutput(IReadOnlyCellMapItem map, object param)
+        {
+            Console.WriteLine($"IgnoreOutput!: {map.Name}");
+            return false;
+        }
     }
 
     class ChildItem
