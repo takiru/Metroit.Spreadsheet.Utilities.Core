@@ -15,19 +15,19 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
         public string FamilyName { get; } = string.Empty;
 
         /// <summary>
-        /// フォントスタイル を指定します。既定は <see cref="FontStyle.Regular"/> です。
+        /// フォントスタイル を指定します。既定は未指定を示す null です。
         /// </summary>
-        public FontStyle FontStyle { get; } = FontStyle.Regular;
+        public FontStyle? FontStyle { get; } = null;
 
         /// <summary>
-        /// フォントサイズ を指定します。既定は未指定を示す -1 です。
+        /// フォントサイズ を指定します。既定は未指定を示す null です。
         /// </summary>
-        public float Size { get; } = -1;
+        public float? Size { get; } = null;
 
         /// <summary>
-        /// フォント色 を指定します。既定は <see cref="Color.Black"/> です。
+        /// フォント色 を指定します。既定は未指定を示す null です。
         /// </summary>
-        public Color Color { get; } = Color.Black;
+        public Color? Color { get; } = null;
 
         /// <summary>
         /// 新しいインスタンスを生成します。
@@ -103,7 +103,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
         /// <param name="blue">RGB形式で指定する青色。</param>
         public CellFontAttribute(int red, int green, int blue)
         {
-            Color = Color.FromArgb(red, green, blue);
+            Color = System.Drawing.Color.FromArgb(red, green, blue);
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
         /// <param name="blue">RGB形式で指定する青色。</param>
         public CellFontAttribute(float size, int red, int green, int blue) : this(size)
         {
-            Color = Color.FromArgb(red, green, blue);
+            Color = System.Drawing.Color.FromArgb(red, green, blue);
         }
     }
 }

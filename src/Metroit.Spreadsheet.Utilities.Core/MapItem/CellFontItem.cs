@@ -15,17 +15,17 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
         /// <summary>
         /// フォントサイズを取得します。
         /// </summary>
-        public float Size { get; }
+        public float? Size { get; }
 
         /// <summary>
         /// フォントスタイルを取得します。
         /// </summary>
-        public FontStyle FontStyle { get; }
+        public FontStyle? FontStyle { get; }
 
         /// <summary>
         /// フォント色を取得します。
         /// </summary>
-        public Color Color { get; }
+        public Color? Color { get; }
 
         /// <summary>
         /// 新しいインスタンスを生成します。
@@ -34,7 +34,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
         /// <param name="size">フォントサイズ。</param>
         /// <param name="fontStyle">フォントスタイル。</param>
         /// <param name="color">フォント色。</param>
-        public CellFontItem(string familyName, float size, FontStyle fontStyle, Color color)
+        public CellFontItem(string familyName, float? size, FontStyle? fontStyle, Color? color)
         {
             FamilyName = familyName;
             Size = size;
