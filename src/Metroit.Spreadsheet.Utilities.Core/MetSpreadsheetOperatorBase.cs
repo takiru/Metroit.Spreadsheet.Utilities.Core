@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Schema;
@@ -104,7 +105,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
             _parsedProperties = new TargetItem(value);
             Parse(_parsedProperties, typeof(CellOutputMapAttribute));
-            Write(_parsedProperties, 0, MapDirection.None, 0);
+            Write(_parsedProperties, 0, MapDirection.None, 0, -1);
 
             TestResult(_parsedProperties);
 
@@ -429,83 +430,78 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <param name="mapIndex">マッピングする項目の書き出し開始インデックス。</param>
         /// <param name="mapDirection">マッピング方向。</param>
         /// <param name="skip">マッピング方向へのスキップするセル数。</param>
-        private void Write(TargetItem item, int mapIndex, MapDirection mapDirection, int skip)
+        /// <param name="currentMapIndex">現在のマッピングする項目の書き出し開始インデックス。</param>
+        private void Write(TargetItem item, int mapIndex, MapDirection mapDirection, int skip, int currentMapIndex)
         {
             var internalMapIndex = mapIndex;
 
             foreach (var pi in item.Properties)
             {
-                var mapItem = GetOutMapItem(item.Value, pi);
+                // 書き出し位置の取得
+                var mapItem = GetOutMapItem(item.Value, pi, internalMapIndex, mapDirection);
 
-                // 書き出しが無視された場合は書き出しを行わない
-                if (mapItem == null)
+                // 結合
+                mapItem = MergeCell(pi, mapItem);
+
+                // 書式
+                SetFormat(pi, mapItem);
+
+                // フォント
+                SetFont(pi, mapItem);
+
+                // 修飾
+                SetDecoration(pi, mapItem);
+
+                // 配置
+                SetAlignment(pi, mapItem);
+
+                // 背景
+                SetBackground(pi, mapItem);
+
+                // 罫線
+                SetBorders(pi, mapItem);
+
+                // ユーザー制御に伴う書き出しの無視(特定条件の時だけ書き出ししたくないとか)
+                if (IgnoreOutputCell(item.Value, mapItem))
                 {
                     continue;
                 }
 
+                // 値の書き出し
+                var value = pi.GetValue(item.Value);
+                SetValue(mapItem, value);
 
-                // 結合
-                var mergeAttr = Attribute.GetCustomAttribute(pi, typeof(CellMergeAttribute)) as CellMergeAttribute;
-                CellMergeItem mergeItem = null;
-                if (mergeAttr != null)
+                if (mapDirection == MapDirection.Row)
                 {
-                    var endRow = mergeAttr.Row;
-                    var endColumn = mergeAttr.Column;
-                    if (mergeAttr.Position == CellMergePosition.Relative)
+                    if (currentMapIndex < mapItem.EndRow)
                     {
-                        endRow = mapItem.Row + mergeAttr.Row;
-                        endColumn = mapItem.Column + mergeAttr.Column;
+                        currentMapIndex = mapItem.EndRow;
                     }
-
-                    mergeItem = new CellMergeItem(mergeAttr.Row, mergeAttr.Column, mergeAttr.Position, endRow, endColumn);
                 }
-                MergeCell(pi, mapItem);
-
+                if (mapDirection == MapDirection.Column)
+                {
+                    if (currentMapIndex < mapItem.EndColumn)
+                    {
+                        currentMapIndex = mapItem.EndColumn;
+                    }
+                }
             }
 
             // 子要素の書き込み
             foreach (var child in item.Children)
             {
-                Write(child, mapIndex, mapDirection, skip);
+                Write(child, mapIndex, mapDirection, skip, internalMapIndex);
             }
 
             // マッピングするインデックスを加算
+            internalMapIndex = currentMapIndex;
             if (mapDirection != MapDirection.None)
             {
                 internalMapIndex += skip;
             }
+
+            currentMapIndex = internalMapIndex;
         }
-
-
-        /// <summary>
-        /// 結合を行う。
-        /// </summary>
-        /// <param name="obj">プロパティが含まれるオブジェクト。</param>
-        /// <param name="pi">プロパティ。</param>
-        /// <returns>書き出しマップ情報。</returns>
-        private CellOutputMapItem MergeCell(PropertyInfo pi, CellOutputMapItem mapItem)
-        {
-            // 結合
-            var mergeAttr = pi.GetCustomAttribute<CellMergeAttribute>();
-            if (mergeAttr == null)
-            {
-                return mapItem;
-            }
-
-            CellMergeItem mergeItem = null;
-            var endRow = mergeAttr.Row;
-            var endColumn = mergeAttr.Column;
-            if (mergeAttr.Position == CellMergePosition.Relative)
-            {
-                endRow = mapItem.Row + mergeAttr.Row;
-                endColumn = mapItem.Column + mergeAttr.Column;
-            }
-
-            mergeItem = new CellMergeItem(mergeAttr.Row, mergeAttr.Column, mergeAttr.Position, endRow, endColumn);
-
-            return mapItem;
-        }
-
 
         /// <summary>
         /// 書き出しマップ情報を取得する。
@@ -513,19 +509,21 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// <param name="obj">プロパティが含まれるオブジェクト。</param>
         /// <param name="pi">プロパティ。</param>
         /// <returns>書き出しマップ情報。</returns>
-        private CellOutputMapItem GetOutMapItem(object obj, PropertyInfo pi)
+        private CellOutputMapItem GetOutMapItem(object obj, PropertyInfo pi, int mapIndex, MapDirection mapDirection)
         {
             var mapAttr = pi.GetCustomAttribute<CellOutputMapAttribute>();
             var mapItem = new CellOutputMapItem(pi.Name, mapAttr.Row, mapAttr.Column, mapAttr.Formula);
+            if (mapDirection == MapDirection.Row)
+            {
+                mapItem.ChangeRow(mapIndex);
+            }
+            if (mapDirection == MapDirection.Column)
+            {
+                mapItem.ChangeColumn(mapIndex);
+            }
 
             // ユーザー制御に伴うセル位置の変更
             ConfigureOutputCell(obj, mapItem);
-
-            // ユーザー制御に伴う書き出しの無視(特定条件の時だけ書き出ししたくないとか)
-            if (IgnoreOutputCell(obj, mapItem))
-            {
-                return null;
-            }
 
             return mapItem;
         }
@@ -563,6 +561,217 @@ namespace Metroit.Spreadsheet.Utilities.Core
 
             return false;
         }
+
+
+
+
+        /// <summary>
+        /// 実際のセル結合を行う処理。
+        /// </summary>
+        /// <param name="mapItem">結合情報が反映された書き出しマップ情報。</param>
+        protected abstract void MergeCell(IReadOnlyCellMapItem mapItem);
+
+
+        /// <summary>
+        /// 結合を行う。
+        /// </summary>
+        /// <param name="pi">プロパティ。</param>
+        /// <param name="mapItem">書き出しマップ情報。</param>
+        /// <returns>書き出しマップ情報。</returns>
+        private CellOutputMapItem MergeCell(PropertyInfo pi, CellOutputMapItem mapItem)
+        {
+            var mergeAttr = pi.GetCustomAttribute<CellMergeAttribute>();
+            if (mergeAttr == null)
+            {
+                return mapItem;
+            }
+
+            // 結合するセル位置を求める
+            var endRow = mergeAttr.Row;
+            var endColumn = mergeAttr.Column;
+            if (mergeAttr.Position == CellMergePosition.Relative)
+            {
+                endRow = mapItem.EndRow + mergeAttr.Row;
+                endColumn = mapItem.EndColumn + mergeAttr.Column;
+            }
+
+            // マージされたセル範囲を把握する
+            var startRow = mapItem.StartRow;
+            var startColumn = mapItem.StartColumn;
+
+            if (endRow < startRow)
+            {
+                var tempRow = endRow;
+                endRow = startRow;
+                startRow = tempRow;
+            }
+            if (endColumn < startColumn)
+            {
+                var tempColumn = endColumn;
+                endColumn = startColumn;
+                startColumn = tempColumn;
+            }
+            mapItem.ChangeCell(startRow, startColumn, endRow, endColumn);
+            MergeCell(mapItem);
+
+            return mapItem;
+        }
+
+
+        /// <summary>
+        /// 実際の書式設定を行う処理。
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <param name="formatItem">書式設定。</param>
+        protected abstract void SetFormat(IReadOnlyCellMapItem mapItem, CellFormatItem formatItem);
+
+        /// <summary>
+        /// 書式設定を行う。
+        /// </summary>
+        /// <param name="pi"></param>
+        /// <param name="mapItem"></param>
+        private void SetFormat(PropertyInfo pi, IReadOnlyCellMapItem mapItem)
+        {
+            var formatAttr = pi.GetCustomAttribute<CellFormatAttribute>();
+            if (formatAttr == null)
+            {
+                return;
+            }
+
+            var formatItem = new CellFormatItem(formatAttr.Format);
+            SetFormat(mapItem, formatItem);
+        }
+
+
+        /// <summary>
+        /// 実際のフォント設定を行う処理。
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <param name="fontItem">フォント設定。</param>
+        protected abstract void SetFont(IReadOnlyCellMapItem mapItem, CellFontItem fontItem);
+
+        /// <summary>
+        /// フォント設定を行う。
+        /// </summary>
+        /// <param name="pi"></param>
+        /// <param name="mapItem"></param>
+        private void SetFont(PropertyInfo pi, CellOutputMapItem mapItem)
+        {
+            var fontAttr = pi.GetCustomAttribute<CellFontAttribute>();
+            if (fontAttr == null)
+            {
+                return;
+            }
+
+            var fontItem = new CellFontItem(fontAttr.FamilyName, fontAttr.Size, fontAttr.FontStyle, fontAttr.Color);
+            SetFont(mapItem, fontItem);
+        }
+
+
+        /// <summary>
+        /// 実際の修飾設定を行う処理。
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <param name="characterDecorationItem">文字修飾設定。</param>
+        protected abstract void SetDecoration(IReadOnlyCellMapItem mapItem, CellCharacterDecorationItem characterDecorationItem);
+
+        /// <summary>
+        /// 文字修飾設定を行う。
+        /// </summary>
+        /// <param name="pi"></param>
+        /// <param name="mapItem"></param>
+        private void SetDecoration(PropertyInfo pi, CellOutputMapItem mapItem)
+        {
+            var decorationAttr = pi.GetCustomAttribute<CellCharacterDecorationAttribute>();
+            if (decorationAttr == null)
+            {
+                return;
+            }
+
+            var decorationItem = new CellCharacterDecorationItem(decorationAttr.UnderlineStyle, decorationAttr.CharacterPosition);
+            SetDecoration(mapItem, decorationItem);
+        }
+
+
+        /// <summary>
+        /// 実際の配置設定を行う処理。
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <param name="alignmentItem">配置設定。</param>
+        protected abstract void SetAlignment(IReadOnlyCellMapItem mapItem, CellAlignmentItem alignmentItem);
+
+        /// <summary>
+        /// 配置設定を行う。
+        /// </summary>
+        /// <param name="pi"></param>
+        /// <param name="mapItem"></param>
+        private void SetAlignment(PropertyInfo pi, CellOutputMapItem mapItem)
+        {
+            var alignmentAttr = pi.GetCustomAttribute<CellAlignmentAttribute>();
+            if (alignmentAttr == null)
+            {
+                return;
+            }
+
+            var alignmentItem = new CellAlignmentItem(alignmentAttr.Horizontal, alignmentAttr.Vertical);
+            SetAlignment(mapItem, alignmentItem);
+        }
+
+
+        /// <summary>
+        /// 実際の背景設定を行う処理。
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <param name="backgroundItem">背景設定。</param>
+        protected abstract void SetBackground(IReadOnlyCellMapItem mapItem, CellBackgroundItem backgroundItem);
+
+        /// <summary>
+        /// 背景設定を行う。
+        /// </summary>
+        /// <param name="pi"></param>
+        /// <param name="mapItem"></param>
+        private void SetBackground(PropertyInfo pi, IReadOnlyCellMapItem mapItem)
+        {
+            var backgroundAttr = pi.GetCustomAttribute<CellBackgroundAttribute>();
+            if (backgroundAttr == null)
+            {
+                return;
+            }
+
+            var backgroundItem = new CellBackgroundItem(backgroundAttr.Color);
+            SetBackground(mapItem, backgroundItem);
+        }
+
+
+        /// <summary>
+        /// 実際の罫線設定を行う処理。
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <param name="borderItem">罫線設定。</param>
+        protected abstract void SetBorder(IReadOnlyCellMapItem mapItem, CellBorderItem borderItem);
+
+        /// <summary>
+        /// 罫線設定を行う。
+        /// </summary>
+        /// <param name="pi"></param>
+        /// <param name="mapItem"></param>
+        private void SetBorders(PropertyInfo pi, IReadOnlyCellMapItem mapItem)
+        {
+            var borderAttrs = pi.GetCustomAttributes<CellBorderAttribute>();
+
+            foreach (var borderAttr in borderAttrs)
+            {
+                var borderItem = new CellBorderItem(borderAttr.Position, borderAttr.Style, borderAttr.Weight, borderAttr.Color);
+                SetBorder(mapItem, borderItem);
+            }
+        }
+
+        /// <summary>
+        /// 実際の値設定を行う処理。
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <param name="value">書き出す値。</param>
+        protected abstract void SetValue(IReadOnlyCellMapItem mapItem, object value);
 
 
 

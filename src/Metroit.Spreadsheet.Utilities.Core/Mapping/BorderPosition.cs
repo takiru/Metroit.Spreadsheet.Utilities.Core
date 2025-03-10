@@ -6,7 +6,7 @@
     public enum BorderPosition
     {
         /// <summary>
-        /// 消すこと を示します。
+        /// 指定なし を示します。
         /// </summary>
         None,
 

@@ -8,12 +8,12 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
     public class CellBackgroundItem
     {
         /// <summary>
-        /// 背景色 を指定します。
+        /// 背景色を取得します。
         /// </summary>
-        public Color Color { get; set; }
+        public Color Color { get; }
 
         /// <summary>
-        /// 新しい CellBackgroundItem インスタンスを生成します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
         public CellBackgroundItem(Color color)
         {

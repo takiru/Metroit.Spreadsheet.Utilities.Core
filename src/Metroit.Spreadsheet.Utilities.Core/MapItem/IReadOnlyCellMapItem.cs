@@ -6,7 +6,7 @@
     public interface IReadOnlyCellMapItem
     {
         /// <summary>
-        /// 読み込みを行うプロパティ名を取得します。
+        /// プロパティ名を取得します。
         /// </summary>
         string Name { get; }
 
@@ -21,14 +21,24 @@
         int OriginalColumn { get; }
 
         /// <summary>
-        /// 読み込みを行う行インデックスを取得します。
+        /// 開始行インデックスを取得します。
         /// </summary>
-        int Row { get; }
+        int StartRow { get; }
 
         /// <summary>
-        /// 読み込みを行う列インデックスを取得します。
+        /// 開始列インデックスを取得します。
         /// </summary>
-        int Column { get; }
+        int StartColumn { get; }
+
+        /// <summary>
+        /// 終了行インデックスを取得します。
+        /// </summary>
+        int EndRow { get; }
+
+        /// <summary>
+        /// 終了列インデックスを取得します。
+        /// </summary>
+        int EndColumn { get; }
 
         /// <summary>
         /// 数式かどうかを取得します。

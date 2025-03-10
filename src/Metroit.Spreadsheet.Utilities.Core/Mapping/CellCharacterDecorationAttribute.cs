@@ -9,41 +9,37 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
     public class CellCharacterDecorationAttribute : Attribute
     {
         /// <summary>
-        /// 下線 を取得します。既定は null です。
+        /// 下線スタイルを取得します。既定は <see cref="UnderlineStyle.None"/> です。
+        /// <see cref="UnderlineStyle.None"/> 以外が指定された時、<see cref="CellFontAttribute.FontStyle"/> で指定した下線情報は失われます。
         /// </summary>
-        public UnderlineStyle? UnderlineStyle { get; } = null;
+        public UnderlineStyle UnderlineStyle { get; } = UnderlineStyle.None;
 
         /// <summary>
-        /// 文字付き位置 を取得します。既定は null　です。
+        /// 文字付き位置を取得します。既定は <see cref="CharacterPosition.Normal"/> です。
         /// </summary>
-        public CharacterPosition? CharacterPosition { get; } = null;
+        public CharacterPosition CharacterPosition { get; } = CharacterPosition.Normal;
 
         /// <summary>
-        /// 新しい CellCharacterDecorationAttribute インスタンスを生成します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
         /// <param name="underlineStyle">下線。</param>
-        public CellCharacterDecorationAttribute(UnderlineStyle underlineStyle)
+        /// <param name="characterPosition">文字付き位置。</param>
+        public CellCharacterDecorationAttribute(UnderlineStyle underlineStyle, CharacterPosition characterPosition)
         {
             UnderlineStyle = underlineStyle;
-        }
-
-        /// <summary>
-        /// 新しい CellCharacterDecorationAttribute インスタンスを生成します。
-        /// </summary>
-        /// <param name="characterPosition">文字付き位置。</param>
-        public CellCharacterDecorationAttribute(CharacterPosition characterPosition)
-        {
             CharacterPosition = characterPosition;
         }
 
         /// <summary>
-        /// 新しい CellCharacterDecorationAttribute インスタンスを生成します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
         /// <param name="underlineStyle">下線。</param>
+        public CellCharacterDecorationAttribute(UnderlineStyle underlineStyle) : this(underlineStyle, CharacterPosition.Normal) { }
+
+        /// <summary>
+        /// 新しいインスタンスを生成します。
+        /// </summary>
         /// <param name="characterPosition">文字付き位置。</param>
-        public CellCharacterDecorationAttribute(UnderlineStyle underlineStyle, CharacterPosition characterPosition) : this(underlineStyle)
-        {
-            CharacterPosition = characterPosition;
-        }
+        public CellCharacterDecorationAttribute(CharacterPosition characterPosition) : this(UnderlineStyle.None, characterPosition) { }
     }
 }

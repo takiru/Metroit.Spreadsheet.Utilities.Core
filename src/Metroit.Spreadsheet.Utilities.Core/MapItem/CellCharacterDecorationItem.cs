@@ -8,21 +8,21 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
     public class CellCharacterDecorationItem
     {
         /// <summary>
-        /// 下線 を取得します。既定は null です。
+        /// 下線を取得します。
         /// </summary>
-        public UnderlineStyle? UnderlineStyle { get; set; }
+        public UnderlineStyle UnderlineStyle { get; }
 
         /// <summary>
-        /// 文字付き位置 を取得します。既定は null　です。
+        /// 文字付き位置を取得します。
         /// </summary>
-        public CharacterPosition? CharacterPosition { get; set; }
+        public CharacterPosition CharacterPosition { get; }
 
         /// <summary>
-        /// 新しい CellCharacterDecorationItem インスタンスを生成します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
         /// <param name="underlineStyle">下線。</param>
         /// <param name="characterPosition">文字付き位置。</param>
-        public CellCharacterDecorationItem(UnderlineStyle? underlineStyle, CharacterPosition? characterPosition)
+        public CellCharacterDecorationItem(UnderlineStyle underlineStyle, CharacterPosition characterPosition)
         {
             UnderlineStyle = underlineStyle;
             CharacterPosition = characterPosition;

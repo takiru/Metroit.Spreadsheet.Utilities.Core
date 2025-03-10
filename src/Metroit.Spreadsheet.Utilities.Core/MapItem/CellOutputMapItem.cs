@@ -23,14 +23,24 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
         public int OriginalColumn { get; }
 
         /// <summary>
-        /// 書き出しを行う行インデックスを取得します。
+        /// 書き出しを行う開始行インデックスを取得します。
         /// </summary>
-        public int Row { get; private set; }
+        public int StartRow { get; private set; }
 
         /// <summary>
-        /// 書き出しを行う列インデックスを取得します。
+        /// 書き出しを行う開始列インデックスを取得します。
         /// </summary>
-        public int Column { get; private set; }
+        public int StartColumn { get; private set; }
+
+        /// <summary>
+        /// 書き出しを行う終了行インデックスを取得します。
+        /// </summary>
+        public int EndRow { get; private set; }
+
+        /// <summary>
+        /// 書き出しを行う終了列インデックスを取得します。
+        /// </summary>
+        public int EndColumn { get; private set; }
 
         /// <summary>
         /// 数式かどうかを取得します。
@@ -48,9 +58,11 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
         {
             Name = name;
             OriginalRow = row;
-            Row = row;
+            StartRow = row;
+            EndRow = row;
             OriginalColumn = column;
-            Column = column;
+            StartColumn = column;
+            EndColumn = column;
             IsFormula = isFormula;
         }
 
@@ -63,9 +75,10 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
         {
             if (row < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(Row), row, "Row must be greater than or equal to 0.");
+                throw new ArgumentOutOfRangeException(nameof(StartRow), row, "Row must be greater than or equal to 0.");
             }
-            Row = row;
+            StartRow = row;
+            EndRow = row;
         }
 
         /// <summary>
@@ -76,9 +89,18 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
         {
             if (column < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(Column), column, "Column must be greater than or equal to 0.");
+                throw new ArgumentOutOfRangeException(nameof(StartColumn), column, "Column must be greater than or equal to 0.");
             }
-            Column = column;
+            StartColumn = column;
+            EndColumn = column;
+        }
+
+        internal void ChangeCell(int startRow, int startColumn, int endRow, int endColumn)
+        {
+            StartRow = startRow;
+            StartColumn = startColumn;
+            EndRow = endRow;
+            EndColumn = endColumn;
         }
     }
 }

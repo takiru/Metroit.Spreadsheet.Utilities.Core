@@ -9,14 +9,14 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
     public class CellAlignmentAttribute : Attribute
     {
         /// <summary>
-        /// 横位置 を指定します。既定は null です。
+        /// 横位置 を指定します。既定は <see cref="HorizontalAlignment.General"/> です。
         /// </summary>
-        public HorizontalAlignment? Horizontal { get; } = null;
+        public HorizontalAlignment Horizontal { get; } = HorizontalAlignment.General;
 
         /// <summary>
-        /// 縦位置 を指定します。既定は null です。
+        /// 縦位置 を指定します。既定は <see cref="VerticalAlignment.Center"/> です。
         /// </summary>
-        public VerticalAlignment? Vertical { get; } = null;
+        public VerticalAlignment Vertical { get; } = VerticalAlignment.Center;
 
         /// <summary>
         /// 新しい CellAlignmentAttribute インスタンスを生成します。

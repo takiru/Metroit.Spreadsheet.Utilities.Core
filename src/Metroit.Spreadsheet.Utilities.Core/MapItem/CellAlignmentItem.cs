@@ -9,21 +9,21 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
     public class CellAlignmentItem : Attribute
     {
         /// <summary>
-        /// 横位置 を指定します。
+        /// 水平位置を取得します。
         /// </summary>
-        public HorizontalAlignment? Horizontal { get; set; }
+        public HorizontalAlignment Horizontal { get; }
 
         /// <summary>
-        /// 縦位置 を指定します。
+        /// 垂直位置を取得します。
         /// </summary>
-        public VerticalAlignment? Vertical { get; set; }
+        public VerticalAlignment Vertical { get; }
 
         /// <summary>
-        /// 新しい CellAlignmentItem インスタンスを生成します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
-        /// <param name="horizontal">横位置。</param>
-        /// <param name="vertical">縦位置。</param>
-        public CellAlignmentItem(HorizontalAlignment? horizontal, VerticalAlignment? vertical)
+        /// <param name="horizontal">水平位置。</param>
+        /// <param name="vertical">垂直位置。</param>
+        public CellAlignmentItem(HorizontalAlignment horizontal, VerticalAlignment vertical)
         {
             Horizontal = horizontal;
             Vertical = vertical;

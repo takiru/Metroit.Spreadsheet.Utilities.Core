@@ -6,12 +6,12 @@
     public class CellFormatItem
     {
         /// <summary>
-        /// 書式を指定します。
+        /// 書式を取得します。
         /// </summary>
-        public string Format { get; set; }
+        public string Format { get; }
 
         /// <summary>
-        /// 新しい CellFormatItem インスタンスを生成します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
         /// <param name="format">書式。</param>
         public CellFormatItem(string format)

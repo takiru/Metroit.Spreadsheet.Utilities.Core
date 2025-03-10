@@ -9,27 +9,27 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
     public class CellBorderItem
     {
         /// <summary>
-        /// 罫線の位置 を指定します。
+        /// 罫線の位置を取得します。
         /// </summary>
-        public BorderPosition Position { get; set; }
+        public BorderPosition Position { get; }
 
         /// <summary>
-        /// 罫線のスタイル を指定します。
+        /// 罫線のスタイルを取得します。
         /// </summary>
-        public LineStyle Style { get; set; }
+        public LineStyle Style { get; }
 
         /// <summary>
-        /// 罫線の太さ を指定します。
+        /// 罫線の太さを取得します。
         /// </summary>
-        public BorderWeightType Weight { get; set; }
+        public BorderWeightType Weight { get; }
 
         /// <summary>
-        /// 罫線の色 を指定します。
+        /// 罫線の色を取得します。
         /// </summary>
-        public Color Color { get; set; }
+        public Color Color { get; }
 
         /// <summary>
-        /// 新しい CellBorderItem インスタンスを生成します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
         /// <param name="position">罫線の位置。</param>
         /// <param name="style">罫線のスタイル。</param>

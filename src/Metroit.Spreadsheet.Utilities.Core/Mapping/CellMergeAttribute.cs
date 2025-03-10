@@ -37,11 +37,25 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
         /// <summary>
         /// 新しい CellMergeAttribute インスタンスを生成します。
         /// </summary>
-        /// <param name="row">終了行インデックスまたは相対値。</param>
-        /// <param name="column">終了列インデックスまたは相対値。</param>
+        /// <param name="row">終了行インデックスまたは相対値。position を <see cref="CellMergePosition.Absolute"/> とした時、0 以上でなければなりません。</param>
+        /// <param name="column">終了列インデックスまたは相対値。position を <see cref="CellMergePosition.Absolute"/> とした時、0 以上でなければなりません。</param>
         /// <param name="position">結合を行う配置方法。</param>
-        public CellMergeAttribute(int row, int column, CellMergePosition position) : this(row, column)
+        public CellMergeAttribute(int row, int column, CellMergePosition position)
         {
+            if (position == CellMergePosition.Absolute)
+            {
+                if (row < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(row));
+                }
+                if (column < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(column));
+                }
+            }
+
+            Row = row;
+            Column = column;
             Position = position;
         }
     }

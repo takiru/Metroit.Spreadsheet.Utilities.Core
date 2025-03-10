@@ -10,32 +10,28 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
     public class CellBackgroundAttribute : Attribute
     {
         /// <summary>
-        /// 背景色 を指定します。既定は null です。
+        /// 背景色 を指定します。
         /// </summary>
-        public string Color { get; set; } = null;
+        public Color Color { get; }
 
         /// <summary>
-        /// 新しい CellBackgroundAttribute インスタンスを生成します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
+        /// <param name="color">Red や #FF0000 などのHTML色表現で指定する色。</param>
         public CellBackgroundAttribute(string color)
         {
-            Color = color;
+            Color = ColorTranslator.FromHtml(color);
         }
 
         /// <summary>
-        /// フォント色 を取得します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
-        /// <returns>フォント色。</returns>
-        public Color GetColor()
+        /// <param name="red">RGB形式で指定する赤色。</param>
+        /// <param name="green">RGB形式で指定する緑色。</param>
+        /// <param name="blue">RGB形式で指定する青色。</param>
+        public CellBackgroundAttribute(int red, int green, int blue)
         {
-            try
-            {
-                return ColorTranslator.FromHtml(Color);
-            }
-            catch
-            {
-                return System.Drawing.Color.Empty;
-            }
+            Color = Color.FromArgb(red, green, blue);
         }
     }
 }

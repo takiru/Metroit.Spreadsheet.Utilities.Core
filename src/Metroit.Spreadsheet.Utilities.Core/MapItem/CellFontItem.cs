@@ -8,37 +8,37 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
     public class CellFontItem
     {
         /// <summary>
-        /// フォント を指定します。
+        /// フォント名を取得します。
         /// </summary>
-        public string FontFamily { get; set; }
+        public string FamilyName { get; }
 
         /// <summary>
-        /// フォントスタイル を指定します。
+        /// フォントサイズを取得します。
         /// </summary>
-        public FontStyle? FontStyle { get; set; }
+        public float Size { get; }
 
         /// <summary>
-        /// フォントサイズ を指定します。
+        /// フォントスタイルを取得します。
         /// </summary>
-        public float? Size { get; set; }
+        public FontStyle FontStyle { get; }
 
         /// <summary>
-        /// フォント色 を指定します。
+        /// フォント色を取得します。
         /// </summary>
-        public Color Color { get; set; }
+        public Color Color { get; }
 
         /// <summary>
-        /// 新しい CellFontItem インスタンスを生成します。
+        /// 新しいインスタンスを生成します。
         /// </summary>
-        /// <param name="font">フォント。</param>
-        /// <param name="fontStyle">フォントスタイル。</param>
+        /// <param name="familyName">フォント名。</param>
         /// <param name="size">フォントサイズ。</param>
+        /// <param name="fontStyle">フォントスタイル。</param>
         /// <param name="color">フォント色。</param>
-        public CellFontItem(Font font, FontStyle? fontStyle, float? size, Color color)
+        public CellFontItem(string familyName, float size, FontStyle fontStyle, Color color)
         {
-            FontFamily = font.FontFamily.Name;
-            FontStyle = fontStyle;
+            FamilyName = familyName;
             Size = size;
+            FontStyle = fontStyle;
             Color = color;
         }
     }
