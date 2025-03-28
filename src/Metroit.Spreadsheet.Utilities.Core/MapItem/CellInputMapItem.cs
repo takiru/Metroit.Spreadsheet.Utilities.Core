@@ -5,7 +5,8 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
     /// <summary>
     /// スプレッドシートのセルから読み込みを行う情報を提供します。
     /// </summary>
-    public class CellInputMapItem : IReadOnlyCellMapItem
+    //public class CellInputMapItem : IReadOnlyCellMapItem
+    public class CellInputMapItem
     {
         /// <summary>
         /// 読み込みを行うプロパティ名を取得します。

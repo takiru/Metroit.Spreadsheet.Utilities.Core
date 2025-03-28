@@ -104,7 +104,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
             }
 
             _parsedProperties = new TargetItem(value);
-            Parse(_parsedProperties, typeof(CellOutputMapAttribute));
+            Parse(_parsedProperties, typeof(CellMapAttribute));
             Write(_parsedProperties, 0, MapDirection.None, 0, -1);
 
             TestResult(_parsedProperties);
@@ -147,7 +147,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
             }
 
             _parsedProperties = new TargetItem(value);
-            Parse(_parsedProperties, typeof(CellOutputMapAttribute));
+            Parse(_parsedProperties, typeof(CellMapAttribute));
 
             TestResult(_parsedProperties);
 
@@ -427,18 +427,22 @@ namespace Metroit.Spreadsheet.Utilities.Core
         /// 書き出しを行う。
         /// </summary>
         /// <param name="item">書き出しを行うプロパティ情報。</param>
-        /// <param name="mapIndex">マッピングする項目の書き出し開始インデックス。</param>
+        /// <param name="mapIndex">書き出しインデックス。</param>
         /// <param name="mapDirection">マッピング方向。</param>
         /// <param name="skip">マッピング方向へのスキップするセル数。</param>
         /// <param name="currentMapIndex">現在のマッピングする項目の書き出し開始インデックス。</param>
-        private void Write(TargetItem item, int mapIndex, MapDirection mapDirection, int skip, int currentMapIndex)
+        private int Write(TargetItem item, int mapIndex, MapDirection mapDirection, int skip, int currentMapIndex)
         {
             var internalMapIndex = mapIndex;
-
             foreach (var pi in item.Properties)
             {
-                // 書き出し位置の取得
-                var mapItem = GetOutMapItem(item.Value, pi, internalMapIndex, mapDirection);
+                // TODO: piが配列やIList, IDirectoryの時、MapShiftAttributeを取得して、その値分、mapIndexへ追加する。
+                //       それがないなら、mapIndexのところに出力するって。
+                //       skipなんて概念は、いらない。どこから書き出したいのか、だけでいい。
+                //       んで、1クラスすべての組み合わせの出力が完了して、次のリストにいった時、強制的にmapIndexは直前の+1されたものにする
+
+                // 書き出し位置の生成
+                var mapItem = CreateOutMapItem(item.Value, pi, internalMapIndex, mapDirection);
 
                 // 結合
                 mapItem = MergeCell(pi, mapItem);
@@ -488,39 +492,87 @@ namespace Metroit.Spreadsheet.Utilities.Core
             }
 
             // 子要素の書き込み
-            foreach (var child in item.Children)
+            if (item.Children.Count() > 0)
             {
-                Write(child, mapIndex, mapDirection, skip, internalMapIndex);
+                var childMapIndex = internalMapIndex;
+                foreach (var child in item.Children)
+                {
+                    Write(child, internalMapIndex, mapDirection, skip, currentMapIndex);
+                    childMapIndex += skip;
+                }
+                internalMapIndex = childMapIndex;
             }
 
-            // マッピングするインデックスを加算
-            internalMapIndex = currentMapIndex;
-            if (mapDirection != MapDirection.None)
-            {
-                internalMapIndex += skip;
-            }
+            //// マッピングするインデックスを加算
+            //internalMapIndex = currentMapIndex;
+            //if (mapDirection != MapDirection.None)
+            //{
+            //    internalMapIndex += skip;
+            //}
 
-            currentMapIndex = internalMapIndex;
+            //currentMapIndex = internalMapIndex;
+
+            return internalMapIndex;
         }
 
         /// <summary>
-        /// 書き出しマップ情報を取得する。
+        /// 行インデックスを自動マッピングする。
+        /// 未指定、もしくはマッピング方向が行でない時はマッピングしない。
+        /// </summary>
+        /// <param name="mapItem">書き出し情報。</param>
+        /// <param name="mapIndex">マッピング位置。</param>
+        /// <param name="mapDirection">マッピング方向。</param>
+        private void MapRowIndex(CellOutputMapItem mapItem, int mapIndex, MapDirection mapDirection)
+        {
+            if (mapItem.OriginalRow != CellMapAttribute.UnspecifiedIndex)
+            {
+                return;
+            }
+
+            if (mapDirection == MapDirection.Row)
+            {
+                return;
+            }
+
+            mapItem.ChangeRow(mapIndex);
+        }
+
+        /// <summary>
+        /// 列インデックスを自動マッピングする。
+        /// 未指定、もしくはマッピング方向が行でない時はマッピングしない。
+        /// </summary>
+        /// <param name="mapItem">書き出し情報。</param>
+        /// <param name="mapIndex">マッピング位置。</param>
+        /// <param name="mapDirection">マッピング方向。</param>
+        private void MapColumnIndex(CellOutputMapItem mapItem, int mapIndex, MapDirection mapDirection)
+        {
+            if (mapItem.OriginalColumn != CellMapAttribute.UnspecifiedIndex)
+            {
+                return;
+            }
+
+            if (mapDirection == MapDirection.Column)
+            {
+                return;
+            }
+
+            mapItem.ChangeColumn(mapIndex);
+        }
+
+        /// <summary>
+        /// 書き出しマップ情報を生成する。
         /// </summary>
         /// <param name="obj">プロパティが含まれるオブジェクト。</param>
         /// <param name="pi">プロパティ。</param>
+        /// <param name="mapIndex">マッピングする項目の書き出しインデックス。</param>
+        /// <param name="mapDirection">マッピング方向。</param>
         /// <returns>書き出しマップ情報。</returns>
-        private CellOutputMapItem GetOutMapItem(object obj, PropertyInfo pi, int mapIndex, MapDirection mapDirection)
+        private CellOutputMapItem CreateOutMapItem(object obj, PropertyInfo pi, int mapIndex, MapDirection mapDirection)
         {
-            var mapAttr = pi.GetCustomAttribute<CellOutputMapAttribute>();
+            var mapAttr = pi.GetCustomAttribute<CellMapAttribute>();
             var mapItem = new CellOutputMapItem(pi.Name, mapAttr.Row, mapAttr.Column, mapAttr.Formula);
-            if (mapDirection == MapDirection.Row)
-            {
-                mapItem.ChangeRow(mapIndex);
-            }
-            if (mapDirection == MapDirection.Column)
-            {
-                mapItem.ChangeColumn(mapIndex);
-            }
+            MapRowIndex(mapItem, mapIndex, mapDirection);
+            MapColumnIndex(mapItem, mapIndex, mapDirection);
 
             // ユーザー制御に伴うセル位置の変更
             ConfigureOutputCell(obj, mapItem);

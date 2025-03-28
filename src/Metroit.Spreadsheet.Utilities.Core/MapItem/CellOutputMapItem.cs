@@ -13,12 +13,12 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
         public string Name { get; }
 
         /// <summary>
-        /// オリジナルの行インデックスを取得します。
+        /// オリジナルの行インデックスを取得します。未指定の場合、-1 を取得します。
         /// </summary>
         public int OriginalRow { get; }
 
         /// <summary>
-        /// オリジナルの列インデックスを取得します。
+        /// オリジナルの列インデックスを取得します。未指定の場合、-1 を取得します。
         /// </summary>
         public int OriginalColumn { get; }
 
@@ -95,6 +95,13 @@ namespace Metroit.Spreadsheet.Utilities.Core.MapItem
             EndColumn = column;
         }
 
+        /// <summary>
+        /// セル結合に伴うセル範囲に変更します。
+        /// </summary>
+        /// <param name="startRow">開始行インデックス。</param>
+        /// <param name="startColumn">開始列インデックス。</param>
+        /// <param name="endRow">終了行インデックス。</param>
+        /// <param name="endColumn">終了列インデックス。</param>
         internal void ChangeCell(int startRow, int startColumn, int endRow, int endColumn)
         {
             StartRow = startRow;

@@ -10,7 +10,7 @@ namespace Metroit.Spreadsheet.Utilities.Core
         [CellBorder(BorderPosition.EdgeLeft, LineStyle.Dash, BorderWeightType.Hairline, "Red")]
         [CellBorder(BorderPosition.EdgeRight, LineStyle.Dash, BorderWeightType.Hairline, "Red")]
         [CellBorder(BorderPosition.EdgeLeft, LineStyle.Dash, BorderWeightType.Hairline, "Red")]
-        [CellOutputMap(Column = 1)]
+        [CellMap(Column = 1)]
         public int MyProperty { get; set; }
     }
 }

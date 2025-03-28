@@ -223,7 +223,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
             foreach (var pi in pis)
             {
                 // 出力セルマップを有していないプロパティは実施しない
-                var mapAttr = Attribute.GetCustomAttribute(pi, typeof(CellOutputMapAttribute)) as CellOutputMapAttribute;
+                var mapAttr = Attribute.GetCustomAttribute(pi, typeof(CellMapAttribute)) as CellMapAttribute;
                 if (mapAttr == null)
                 {
                     continue;
@@ -250,8 +250,8 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
                     var endColumn = mergeAttr.Column;
                     if (mergeAttr.Position == CellMergePosition.Relative)
                     {
-                        endRow = mapItem.Row + mergeAttr.Row;
-                        endColumn = mapItem.Column + mergeAttr.Column;
+                        //endRow = mapItem.Row + mergeAttr.Row;
+                        //endColumn = mapItem.Column + mergeAttr.Column;
                     }
 
                     mergeItem = new CellMergeItem(mergeAttr.Row, mergeAttr.Column, mergeAttr.Position, endRow, endColumn);
@@ -276,7 +276,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
                 CellFontItem fontItem = null;
                 if (fontAttr != null)
                 {
-                    fontItem = new CellFontItem(fontAttr.GetFont(), fontAttr.FontStyle, fontAttr.Size, fontAttr.GetColor());
+                    //fontItem = new CellFontItem(fontAttr.GetFont(), fontAttr.FontStyle, fontAttr.Size, fontAttr.GetColor());
                 }
 
                 var decorationAttr = Attribute.GetCustomAttribute(pi, typeof(CellCharacterDecorationAttribute)) as CellCharacterDecorationAttribute;
@@ -299,7 +299,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
                 CellBackgroundItem backgroundItem = null;
                 if (backgroundAttr != null)
                 {
-                    backgroundItem = new CellBackgroundItem(backgroundAttr.GetColor());
+                    //backgroundItem = new CellBackgroundItem(backgroundAttr.GetColor());
                 }
 
                 // 罫線
@@ -309,7 +309,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Mapping
                 {
                     foreach (var borderAttr in borderAttrs.Cast<CellBorderAttribute>())
                     {
-                        borderItems.Add(new CellBorderItem(borderAttr.Position, borderAttr.Style, borderAttr.Weight, borderAttr.GetColor()));
+                        //borderItems.Add(new CellBorderItem(borderAttr.Position, borderAttr.Style, borderAttr.Weight, borderAttr.GetColor()));
                     }
                 }
 

@@ -67,6 +67,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
             //var pi = value.ListChildItems[0].GetType().GetProperty("ChildHoge");
             //pi.GetValue(value.ListChildItems[1]);
 ;
+;
             writer.Write(value);
         }
     }
@@ -78,44 +79,90 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
 
         }
 
+        protected override void MergeCell(IReadOnlyCellMapItem mapItem)
+        {
+            
+        }
+
         protected override void OnRead<T>()
         {
-            throw new NotImplementedException();
+            
         }
 
         protected override void OnWrite()
         {
-            throw new NotImplementedException();
+            
+        }
+
+        protected override void SetAlignment(IReadOnlyCellMapItem mapItem, CellAlignmentItem alignmentItem)
+        {
+            
+        }
+
+        protected override void SetBackground(IReadOnlyCellMapItem mapItem, CellBackgroundItem backgroundItem)
+        {
+            
+        }
+
+        protected override void SetBorder(IReadOnlyCellMapItem mapItem, CellBorderItem borderItem)
+        {
+            
+        }
+
+        protected override void SetDecoration(IReadOnlyCellMapItem mapItem, CellCharacterDecorationItem characterDecorationItem)
+        {
+            
+        }
+
+        protected override void SetFont(IReadOnlyCellMapItem mapItem, CellFontItem fontItem)
+        {
+            
+        }
+
+        protected override void SetFormat(IReadOnlyCellMapItem mapItem, CellFormatItem formatItem)
+        {
+            
+        }
+
+        protected override void SetValue(IReadOnlyCellMapItem mapItem, object value)
+        {
+            
         }
     }
 
     class Item : IOutputCellConfiguration, IOutputIgnoreConfiguration
     {
-        [CellOutputMap(Column = 0)]
+        [CellMap(Column = 0)]
         public char CharValue { get; set; }
 
-        [CellOutputMap(Column = 0)]
+        [CellMap(Column = 0)]
+        [MapShift()]
         public char[] CharValues { get; set; }
 
-        [CellOutputMap(Column = 0)]
+        [CellMap(Column = 0)]
         public string StringValue { get; set; }
 
-        [CellOutputMap(Column = 2)]
+        [CellMap(Column = 2)]
         public int? IntValue { get; set; }
 
-        [CellOutputMap(Column = 4)]
+        [CellMap(Column = 4)]
+        [MapShift()]
         public string[] ArrayStringValues { get; set; }
 
-        [CellOutputMap(Column = 3)]
+        [CellMap(Column = 3)]
+        [MapShift()]
         public Dictionary<int, string> DictionaryValues { get; set; }
 
         public Dictionary<int, ChildItem> DictionaryItems { get; set; }
 
-        [CellOutputMap(Column = 1)]
+        [CellMap(Column = 1)]
+        [MapShift()]
         public List<string> ListStringValues { get; set; }
 
+        [MapShift()]
         public List<ChildItem> ListChildItems { get; set; }
 
+        [MapShift()]
         public ChildItem[] ArrayChildItems { get; set; }
 
         public ChildItem ChildItem { get; set; }
@@ -140,7 +187,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
 
     class ChildItem
     {
-        [CellOutputMap(Column = 10)]
+        [CellMap(Column = 10)]
         public string ChildHoge { get; set; }
     }
 
@@ -151,7 +198,7 @@ namespace Metroit.Spreadsheet.Utilities.Core.Test
 
     class GreatGrandChildItem
     {
-        [CellOutputMap(Column = 11)]
+        [CellMap(Column = 11)]
         public string GreatGrandChildHoge { get; set; }
     }
 
